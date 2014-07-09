@@ -1,0 +1,7 @@
+*.swp
+*.swo
+*.*~
+*.local
+.vimrc
+.local.*.vimrc
+.idea/

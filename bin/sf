@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo 'php app/console ' $@
+php app/console $@

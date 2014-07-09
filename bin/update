@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo 'composer update --verbose --profile'
+composer update --verbose --profile

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo 'Tail apache access'
+tail -f /var/log/apache2/access*
+
+
