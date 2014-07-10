@@ -120,21 +120,21 @@
     <option name="recentPaths">
       <list>
         <option value="$USER_HOME$/Projects/dotfiles" />
-        <option value="$USER_HOME$/Projects/sod" />
         <option value="$USER_HOME$/Projects/lapera" />
+        <option value="$USER_HOME$/Projects/sod" />
         <option value="$USER_HOME$/Projects/planetubuntu" />
         <option value="$USER_HOME$/Projects/FastFeed" />
       </list>
     </option>
     <option name="openPaths">
       <list>
+        <option value="$USER_HOME$/Projects/lapera" />
         <option value="$USER_HOME$/Projects/dotfiles" />
       </list>
     </option>
     <option name="names">
       <map>
         <entry key="$USER_HOME$/Projects/FastFeed" value="" />
-        <entry key="$USER_HOME$/Projects/dotfiles" value="" />
         <entry key="$USER_HOME$/Projects/planetubuntu" value="" />
         <entry key="$USER_HOME$/Projects/sod" value="" />
       </map>

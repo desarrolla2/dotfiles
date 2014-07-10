@@ -1,6 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <versions>
-  <component name="ProjectRootManager" version="1404982021520" />
-  <component name="ToolWindowManager" version="1404982759946" />
+  <component name="ChangeListManager" version="1405000885330" />
+  <component name="ChangesViewManager" version="1405000885331" />
+  <component name="CreatePatchCommitExecutor" version="1405000885334" />
+  <component name="DaemonCodeAnalyzer" version="1405000885334" />
+  <component name="Encoding" version="1405000885379" />
+  <component name="ExecutionTargetManager" version="1405000885379" />
+  <component name="FavoritesManager" version="1405000885379" />
+  <component name="FrameworkRootSettings" version="1405000885422" />
+  <component name="Git.Settings" version="1405000885427" />
+  <component name="PhpWorkspaceProjectConfiguration" version="1405000885492" />
+  <component name="ProjectFrameBounds" version="1405000885494" />
+  <component name="ProjectLevelVcsManager" version="1405000885520" />
+  <component name="ProjectModuleManager" version="1405000885572" />
+  <component name="ProjectReloadState" version="1405000885573" />
+  <component name="ProjectRootManager" version="1405000885573" />
+  <component name="ProjectView" version="1405000905273" />
+  <component name="PropertiesComponent" version="1405000885573" />
+  <component name="RunManager" version="1405000885642" />
+  <component name="ShelveChangesManager" version="1405000885642" />
+  <component name="TaskManager" version="1405000885707" />
+  <component name="ToolWindowManager" version="1405000905274" />
+  <component name="Vcs.Log.UiProperties" version="1405000885713" />
+  <component name="VcsContentAnnotationSettings" version="1405000885718" />
+  <component name="VcsDirectoryMappings" version="1405000885731" />
+  <component name="VcsManagerConfiguration" version="1405000885746" />
+  <component name="XDebuggerManager" version="1405000885747" />
 </versions>
 

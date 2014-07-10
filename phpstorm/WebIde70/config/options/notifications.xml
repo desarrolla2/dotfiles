@@ -15,6 +15,7 @@
     <notification groupId="PHP Debugger" displayType="TOOL_WINDOW" shouldLog="false" />
     <notification groupId="Update Checker" displayType="STICKY_BALLOON" />
     <notification groupId="Plugins Lifecycle Group" displayType="STICKY_BALLOON" />
+    <notification groupId="File type recognized" />
     <toolWindow group="Git Messages" />
     <toolWindow group="FindInPath" />
     <toolWindow group="PHP Debugger" />

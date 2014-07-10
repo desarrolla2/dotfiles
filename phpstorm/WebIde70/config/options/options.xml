@@ -11,6 +11,7 @@
     <location key="WELCOME_SCREEN.0.0.1920.1080" x="738" y="475" />
     <location key="#Framework_Integration.0.0.1920.1080" x="937" y="427" />
     <location key="#com.intellij.fileTypes.FileTypeChooser.0.0.1920.1080" x="690" y="349" />
+    <location key="#Browse_Repositories.0.0.1920.1080" x="539" y="212" />
     <size key="#com.intellij.ide.util.MemberChooser.0.0.1920.1080" width="376" height="553" />
     <size key="#com.intellij.refactoring.rename.AutomaticRenamingDialog.0.0.1920.1080" width="478" height="596" />
     <size key="#Updates.0.0.1920.1080" width="776" height="224" />
@@ -20,6 +21,7 @@
     <size key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate.0.0.1920.1080" width="533" height="247" />
     <size key="#Framework_Integration.0.0.1920.1080" width="594" height="343" />
     <size key="#com.intellij.fileTypes.FileTypeChooser.0.0.1920.1080" width="573" height="429" />
+    <size key="#Browse_Repositories.0.0.1920.1080" width="826" height="703" />
   </component>
   <component name="LafManager">
     <laf class-name="com.intellij.ide.ui.laf.IntelliJLaf" />
@@ -47,6 +49,7 @@
     <property name="ChangesViewManager.DETAILS_SPLITTER_PROPORTION" value="0.5" />
     <property name="SingleInspectionProfilePanel.VERTICAL_DIVIDER_PROPORTION" value="0.5" />
     <property name="SingleInspectionProfilePanel.HORIZONTAL_DIVIDER_PROPORTION" value="0.5" />
+    <property name="PLUGIN_FILTER" value="markdown" />
   </component>
 </application>
 

@@ -2,64 +2,74 @@
 <application>
   <component name="StatisticsApplicationUsages">
     <group name="file-type">
-      <project id="dotfiles" values="XML,PLAIN_TEXT,ARCHIVE,PHP,UNKNOWN" />
-      <project id="planetubuntu" values="PHP,JSON,HTML,PLAIN_TEXT,YAML,UNKNOWN,ARCHIVE,CSS,Twig,XML,htaccess,Images" />
-      <project id="sod" values="Gitignore file,ReST,ARCHIVE,PHAR,PHP,XML,JSHint,htaccess,Ini,PLAIN_TEXT,JavaScript,LESS,Native,Twig,Smarty,SASS,SQL,Locale,DTD,SmartyConfig,SCSS,Images,JSON,PATCH,UNKNOWN,CSS,C++,HTML,TypeScript,YAML" />
-      <project id="FastFeed" values="CSS,ReST,PHP,JavaScript,XML,JSON,Ini,PLAIN_TEXT,htaccess,SmartyConfig,UNKNOWN,DTD,YAML,Images,PATCH,HTML" />
-    </group>
-    <group name="JavaScript versions">
-      <project id="dotfiles" values="DEFAULT" />
-      <project id="planetubuntu" values="DEFAULT" />
-      <project id="sod" values="DEFAULT" />
-      <project id="FastFeed" values="DEFAULT" />
-    </group>
-    <group name="vcs">
-      <project id="dotfiles" values="Git" />
-      <project id="planetubuntu" values="Git" />
-      <project id="sod" values="Git" />
-      <project id="FastFeed" values="Git" />
+      <project id="dotfiles" values="PHP,Gitignore file,PLAIN_TEXT,UNKNOWN,XML,SmartyConfig,ARCHIVE" />
+      <project id="planetubuntu" values="ARCHIVE,XML,Twig,UNKNOWN,JSON,htaccess,YAML,PLAIN_TEXT,PHP,HTML,CSS,Images" />
+      <project id="sod" values="Locale,SmartyConfig,JSHint,Ini,LESS,PHAR,JavaScript,ARCHIVE,Images,PHP,PATCH,SCSS,JSON,YAML,CSS,SQL,PLAIN_TEXT,UNKNOWN,SASS,XML,HTML,Gitignore file,ReST,Twig,TypeScript,Smarty,Native,DTD,htaccess,C++" />
+      <project id="FastFeed" values="JavaScript,XML,PATCH,ReST,SmartyConfig,DTD,HTML,Images,YAML,PHP,Ini,UNKNOWN,JSON,PLAIN_TEXT,htaccess,CSS" />
+      <project id="lapera" values="ReST,Ini,XML,Native,htaccess,PHP,PHAR,PLAIN_TEXT,LESS,SQL,PATCH,TypeScript,C++,HTML,Gitignore file,CSS,Locale,UNKNOWN,ARCHIVE,Images,JSON,SmartyConfig,SCSS,JSHint,JavaScript,Smarty,Twig,DTD,SASS,YAML" />
     </group>
     <group name="php-include-path">
       <project id="dotfiles" values="0" />
       <project id="planetubuntu" values="0" />
       <project id="sod" values="0" />
       <project id="FastFeed" values="0" />
+      <project id="lapera" values="0" />
     </group>
     <group name="php-interpreters">
       <project id="dotfiles" values="0" />
       <project id="planetubuntu" values="0" />
       <project id="sod" values="0" />
       <project id="FastFeed" values="0" />
+      <project id="lapera" values="0" />
+    </group>
+    <group name="JavaScript versions">
+      <project id="dotfiles" values="DEFAULT" />
+      <project id="planetubuntu" values="DEFAULT" />
+      <project id="sod" values="DEFAULT" />
+      <project id="FastFeed" values="DEFAULT" />
+      <project id="lapera" values="DEFAULT" />
     </group>
     <group name="php-servers">
       <project id="dotfiles" values="0" />
       <project id="planetubuntu" values="0" />
       <project id="sod" values="0" />
       <project id="FastFeed" values="0" />
+      <project id="lapera" values="0" />
     </group>
     <group name="php-interpreter-version">
       <project id="dotfiles" values="not installed" />
       <project id="planetubuntu" values="not installed" />
       <project id="sod" values="not installed" />
       <project id="FastFeed" values="not installed" />
+      <project id="lapera" values="not installed" />
+    </group>
+    <group name="vcs">
+      <project id="dotfiles" values="Git" />
+      <project id="planetubuntu" values="Git" />
+      <project id="sod" values="Git" />
+      <project id="FastFeed" values="Git" />
+      <project id="lapera" values="Git" />
     </group>
     <group name="javaScript Scope Usages">
       <project id="dotfiles" values="Project,Project" />
       <project id="planetubuntu" values="Project,Project" />
       <project id="sod" values="Project,Project" />
       <project id="FastFeed" values="Project,Project" />
+      <project id="lapera" values="Project,Project" />
     </group>
     <group name="php-debug-skipped-paths">
       <project id="dotfiles" values="0" />
       <project id="planetubuntu" values="0" />
       <project id="sod" values="0" />
       <project id="FastFeed" values="0" />
+      <project id="lapera" values="0" />
     </group>
     <group name="module type">
       <project id="dotfiles" values="WEB_MODULE" />
       <project id="planetubuntu" values="WEB_MODULE" />
       <project id="sod" values="WEB_MODULE" />
       <project id="FastFeed" values="WEB_MODULE" />
+      <project id="lapera" values="WEB_MODULE" />
     </group>
   </component>
   <component name="UsageTrigger">
