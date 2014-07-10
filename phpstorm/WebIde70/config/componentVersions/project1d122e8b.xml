@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <versions>
   <component name="BookmarkManager" version="1404983344580" />
-  <component name="ChangeListManager" version="1404983613567" />
+  <component name="ChangeListManager" version="1404983749823" />
   <component name="ChangesViewManager" version="1404983344581" />
   <component name="CreatePatchCommitExecutor" version="1404983344582" />
   <component name="DaemonCodeAnalyzer" version="1404983344582" />
   <component name="Encoding" version="1404983344583" />
   <component name="ExecutionTargetManager" version="1404983344583" />
   <component name="FavoritesManager" version="1404983344583" />
-  <component name="FileEditorManager" version="1404983668479" />
+  <component name="FileEditorManager" version="1404983762121" />
   <component name="FindManager" version="1404983413166" />
   <component name="Git.Settings" version="1404983344584" />
   <component name="IdeDocumentHistory" version="1404983637650" />
@@ -29,6 +29,6 @@
   <component name="VcsDirectoryMappings" version="1404983344595" />
   <component name="VcsManagerConfiguration" version="1404983344595" />
   <component name="XDebuggerManager" version="1404983344595" />
-  <component name="editorHistoryManager" version="1404983668482" />
+  <component name="editorHistoryManager" version="1404983762125" />
 </versions>
 

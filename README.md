@@ -8,8 +8,7 @@ to get any ideas about how i work, but be careful is possible that this repo is 
 First of all you need to clone the entire project.
 
 ```zsh
-git@github.com:desarrolla2/dotfiles.git
-
+git clone git@github.com:desarrolla2/dotfiles.git
 ```
 
 You only need to install the components that you want.
@@ -20,21 +19,19 @@ You only need to install the components that you want.
 2. Install zsh oh-my-zsh, see more it [here](https://github.com/eyenx/omzsh).
 3. Create a symbolic link.
 
-```
+```zsh
 ln -s /path/to/dotfiles/zsh/zshrc.sh .zshrc
-
 ```
 
 ## phpstorm
 
 Actually i am using phpstorm 7.1 you can download from [here](http://www.jetbrains.com/phpstorm/download/).
 
-```
+```zsh
 rm -rf .WebIde70
 ln -s /path/to/dotfiles/phpstorm/WebIde70 .WebIde70
-
 ```
 
 # Contact
 
-You can contact me on twitter https://twitter.com/desarrolla2
+You can contact me on twitter [@desarrolla2](https://twitter.com/desarrolla2)
