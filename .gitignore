@@ -1,3 +1,13 @@
+#####################
+# phpstorm
+#####################
+phpstorm/WebIde70/config/*.key
+phpstorm/WebIde70/config/tasks/*
+phpstorm/WebIde70/system
+
+#####################
+# others
+#####################
 *.swp
 *.swo
 *.*~

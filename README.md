@@ -5,12 +5,33 @@ to get any ideas about how i work, but be careful is possible that this repo is 
 
 # Installation
 
-## zsh
+First of all you need to clone the entire project.
 
-You need to install oh-my-zsh, see more on https://github.com/eyenx/omzsh, after include this on your ~/.zshrc file.
+```zsh
+git@github.com:desarrolla2/dotfiles.git
 
 ```
-source /path/to/dotfiles/zsh/zshrc.sh
+
+You only need to install the components that you want.
+
+## zsh
+
+1. Install zsh, `apt-get install zsh` on debian/ubuntu system. More info [here](http://www.zsh.org/).
+2. Install zsh oh-my-zsh, see more it [here](https://github.com/eyenx/omzsh).
+3. Create a symbolic link.
+
+```
+ln -s /path/to/dotfiles/zsh/zshrc.sh .zshrc
+
+```
+
+## phpstorm
+
+Actually i am using phpstorm 7.1 you can download from [here](http://www.jetbrains.com/phpstorm/download/).
+
+```
+rm -rf .WebIde70
+ln -s /path/to/dotfiles/phpstorm/WebIde70 .WebIde70
 
 ```
 
