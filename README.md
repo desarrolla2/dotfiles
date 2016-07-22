@@ -26,7 +26,7 @@ ln -s /path/to/dotfiles/oh-my-zsh/desarrolla2.zsh-theme .oh-my-zsh/themes/desarr
 ```
 This is the aspect that will have your terminal
 
-![screenshot](https://lh3.googleusercontent.com/-9mautYgGVT8/V5IURvfbuHI/AAAAAAAAHXY/QK9KFOy97c4c5lMpyKjK-Gus8uCYbWsHwCL0B/w426-h237/desarrolla2_theme.png "Desarrolla2 theme screenshot")
+![screenshot](https://lh4.googleusercontent.com/-Cnm9OfD8PQ0/V5IV4HtZ7qI/AAAAAAAAHYA/W84Tk8vNbkMbGN7I3HA4eGIxTfWrVMzjACL0B/w1044-h157-no/desarrolla2_theme.png "Desarrolla2 theme screenshot")
 
 ## tmux
 
