@@ -24,6 +24,9 @@ cd
 ln -s /path/to/dotfiles/zsh/zshrc.sh .zshrc
 ln -s /path/to/dotfiles/oh-my-zsh/desarrolla2.zsh-theme .oh-my-zsh/themes/desarrolla2.zsh-theme
 ```
+This is the aspect that will have your terminal
+
+![screenshot](https://lh3.googleusercontent.com/-9mautYgGVT8/V5IURvfbuHI/AAAAAAAAHXY/QK9KFOy97c4c5lMpyKjK-Gus8uCYbWsHwCL0B/w426-h237/desarrolla2_theme.png "Desarrolla2 theme screenshot")
 
 ## tmux
 
@@ -33,6 +36,8 @@ ln -s /path/to/dotfiles/oh-my-zsh/desarrolla2.zsh-theme .oh-my-zsh/themes/desarr
 ```zsh
 cd ~ && ln -s Projects/dotfiles/tmux/tmux.conf .tmux.conf
 ```
+
+I strongly recommend that you also use `guake`
 
 ## git
 
