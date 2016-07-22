@@ -20,7 +20,9 @@ You only need to install the components that you want.
 3. Create a symbolic link.
 
 ```zsh
-cd ~ && ln -s /path/to/dotfiles/zsh/zshrc.sh .zshrc
+cd
+ln -s /path/to/dotfiles/zsh/zshrc.sh .zshrc
+ln -s /path/to/dotfiles/oh-my-zsh/desarrolla2.zsh-theme .oh-my-zsh/themes/desarrolla2.zsh-theme
 ```
 
 ## tmux
@@ -30,15 +32,6 @@ cd ~ && ln -s /path/to/dotfiles/zsh/zshrc.sh .zshrc
 
 ```zsh
 cd ~ && ln -s Projects/dotfiles/tmux/tmux.conf .tmux.conf
-```
-
-## phpstorm
-
-Actually i am using phpstorm 7.1 you can download from [here](http://www.jetbrains.com/phpstorm/download/).
-
-```zsh
-cd ~ && rm -rf .WebIde70
-ln -s /path/to/dotfiles/phpstorm/WebIde70 .WebIde70
 ```
 
 # Contact
