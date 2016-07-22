@@ -13,7 +13,7 @@ git clone git@github.com:desarrolla2/dotfiles.git
 
 You only need to install the components that you want.
 
-## zsh
+## zsh and oh-my-zsh
 
 1. Install zsh with `apt-get install zsh` on debian/ubuntu system. More info [here](http://www.zsh.org/).
 2. Install zsh oh-my-zsh, see more it [here](https://github.com/eyenx/omzsh).
@@ -28,11 +28,20 @@ ln -s /path/to/dotfiles/oh-my-zsh/desarrolla2.zsh-theme .oh-my-zsh/themes/desarr
 ## tmux
 
 1. Install tmux with `apt-get install tmux` on debian/ubuntu system. More info [here](http://tmux.sourceforge.net/).
-3. Create a symbolic link.
+2. Create a symbolic link.
 
 ```zsh
 cd ~ && ln -s Projects/dotfiles/tmux/tmux.conf .tmux.conf
 ```
+
+## git
+
+1. Install tmux with `apt-get install git` on debian/ubuntu system. More info [here](https://git-scm.com/).
+2. Create a symbolic link for gitignore file
+
+```zsh
+git config --global core.excludesfile /path/to/dotfiles/git/gitignore
+ ```
 
 # Contact
 
