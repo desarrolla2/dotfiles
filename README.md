@@ -34,7 +34,7 @@ This is the aspect that will have your terminal
 2. Create a symbolic link.
 
 ```zsh
-cd ~ && ln -s Projects/dotfiles/tmux/tmux.conf .tmux.conf
+cd ~ && ln -s /path/to/dotfiles/tmux/tmux.conf .tmux.conf
 ```
 
 I strongly recommend that you also use `guake`
