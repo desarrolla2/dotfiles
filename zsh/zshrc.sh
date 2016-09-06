@@ -6,4 +6,8 @@ ZSH_THEME="desarrolla2"
 plugins=(git cap composer compleat symfony2 tmux vagrant react-native docker)
 
 source $ZSH/oh-my-zsh.sh
-#source ~/.bash_profile
+
+if [ -f ~/.bash_profile ]
+then
+  source ~/.bash_profile
+fi
