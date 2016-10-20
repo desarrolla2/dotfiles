@@ -1,5 +1,5 @@
 export ZSH=$HOME/.oh-my-zsh
-export PATH=$PATH:~/.local/bin:./node_modules/.bin
+export PATH=$PATH:~/.local/bin:./node_modules/.bin:./vendor/bin
 
 ZSH_THEME="desarrolla2"
 #ZSH_THEME="amuse" # (this is one of the fancy ones)
