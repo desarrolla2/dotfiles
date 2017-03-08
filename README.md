@@ -20,9 +20,8 @@ You only need to install the components that you want.
 3. Create a symbolic link.
 
 ```zsh
-cd
-ln -s /path/to/dotfiles/zsh/zshrc.sh .zshrc
-ln -s /path/to/dotfiles/oh-my-zsh/desarrolla2.zsh-theme .oh-my-zsh/themes/desarrolla2.zsh-theme
+ln -s /path/to/dotfiles/zsh/zshrc.sh ~/.zshrc
+ln -s /path/to/dotfiles/oh-my-zsh/desarrolla2.zsh-theme ~/.oh-my-zsh/themes/desarrolla2.zsh-theme
 ```
 This is the aspect that will have your terminal
 
@@ -34,7 +33,7 @@ This is the aspect that will have your terminal
 2. Create a symbolic link.
 
 ```zsh
-cd ~ && ln -s /path/to/dotfiles/tmux/tmux.conf .tmux.conf
+ln -s /path/to/dotfiles/tmux/tmux.conf ~/.tmux.conf
 ```
 
 I strongly recommend that you also use `guake`
@@ -42,10 +41,18 @@ I strongly recommend that you also use `guake`
 ## git
 
 1. Install tmux with `apt-get install git` on debian/ubuntu system. More info [here](https://git-scm.com/).
-2. Create a symbolic link for gitignore file
+2. Config your gitignore file.
 
 ```zsh
 git config --global core.excludesfile /path/to/dotfiles/git/gitignore
+ ```
+
+## ssh
+
+1. Create a symbolic link.
+
+```zsh
+ln -s /path/to/dotfiles/ssh/config ~/.ssh/config
  ```
 
 # Contact
