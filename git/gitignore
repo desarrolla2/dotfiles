@@ -5,3 +5,4 @@
 *.swp
 *.retry
 .php_cs.cache
+.~lock*

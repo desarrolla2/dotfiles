@@ -1,3 +1,4 @@
 Host *
   TCPKeepAlive yes
   ServerAliveInterval 120
+  IdentityFile ~/.ssh/id_rsa
