@@ -6,4 +6,4 @@
 *.retry
 .php_cs.cache
 .~lock*
-salida.txt
+/salida.*
