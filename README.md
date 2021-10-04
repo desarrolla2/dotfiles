@@ -45,6 +45,7 @@ I strongly recommend that you also use `guake`
 
 ```zsh
 git config --global core.excludesfile /path/to/dotfiles/git/gitignore
+git config core.fileMode false
  ```
 
 ## ssh
