@@ -1,15 +1,19 @@
+# Temporary and cache files
 *.retry
 *.swp
 *~
-.php_cs.cache
 .~lock*
+.php_cs.cache
+
+# Markdown personal shared files in the root directory
+/_*.md
+
+# IDE configuration
 /.idea
-/MEETING.md
-/MEETINGS.md
-/NOTES.md
-/PASSWORDS.md
-/PERSONAL.md
-/RECIPES.md
-/TEAM.md
-/TODO.md
+
+# Output temporal files
 /salida.*
+
+# Manual test files
+*Prueba*
+*prueba*
