@@ -1,0 +1,222 @@
+#!/usr/bin/env bash
+#
+# doctor - check that this machine really is in the state INSTALL.md describes.
+#
+# Turns the "Check it:" blocks of INSTALL.md into assertions. Prints one line
+# per check and exits non-zero when any hard check failed, so it can run at the
+# end of CI and answer the question install.sh cannot: not "did it exit 0" but
+# "did it produce the intended state".
+#
+# No `set -e` on purpose: every check must run so the report is complete.
+# Set CI to any non-empty value to skip the checks that cannot hold in a
+# container (login shell, fonts, guake's dconf database).
+
+DOTFILES="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+ZSH_PLUGINS=(git docker docker-compose extract sudo colored-man-pages
+             zsh-autosuggestions zsh-syntax-highlighting)
+
+pass_n=0; fail_n=0; warn_n=0; skip_n=0
+if [ -t 1 ]; then C_OK=$'\033[32m'; C_NO=$'\033[31m'; C_WA=$'\033[33m'; C_SK=$'\033[36m'; C_0=$'\033[0m'
+else C_OK=; C_NO=; C_WA=; C_SK=; C_0=; fi
+
+section() { printf '\n== %s ==\n' "$1"; }
+pass() { printf '  %sPASS%s  %s\n' "$C_OK" "$C_0" "$1"; pass_n=$((pass_n + 1)); }
+warn() { printf '  %sWARN%s  %s\n        note:     %s\n' "$C_WA" "$C_0" "$1" "$2"; warn_n=$((warn_n + 1)); }
+skip() { printf '  %sSKIP%s  %s (%s)\n' "$C_SK" "$C_0" "$1" "$2"; skip_n=$((skip_n + 1)); }
+fail() { # label expected actual fix
+  printf '  %sFAIL%s  %s\n        expected: %s\n        actual:   %s\n        fix:      %s\n' \
+    "$C_NO" "$C_0" "$1" "$2" "$3" "$4"; fail_n=$((fail_n + 1)); }
+check() { # label expected actual fix
+  if [ "$2" = "$3" ]; then pass "$1 ($3)"; else fail "$1" "$2" "${3:-<empty>}" "$4"; fi
+}
+check_link() { # label link target fix
+  local actual; actual="$([ -L "$2" ] && readlink -f -- "$2")"
+  check "$1" "$3" "${actual:-not a symlink to the repository}" "$4"
+}
+
+check_login_shell() {
+  [ -n "${CI:-}" ] && { skip "login shell is /usr/bin/zsh" "CI, no user database to change"; return; }
+  check "login shell" /usr/bin/zsh "$(getent passwd "$USER" | cut -d: -f7)" \
+    "sudo usermod -s /usr/bin/zsh $USER, then log out and back in"
+}
+
+# One interactive zsh, reused by the zsh and starship checks. `zsh -i` without a
+# TTY prints harmless "can't change option: zle" warnings, dropped here so they
+# cannot fail the clean-startup check. `exit 0` because `zsh -i -c` otherwise
+# returns the status of the last command run by .zshrc.
+probe_zsh() {
+  local err; err="$(mktemp)"
+  zsh_out="$(zsh -i -c 'print -r -- "THEME=[$ZSH_THEME]"
+                        print -r -- "PLUGINS=${(j: :)plugins}"
+                        print -r -- "PRECMD=${(j: :)precmd_functions}"; exit 0' 2>"$err")"
+  zsh_rc=$?
+  zsh_err="$(grep -v "can't change option: zle" "$err")"
+  rm -f "$err"
+}
+
+check_zsh() {
+  check_link "~/.zshrc is a symlink into the repository" "$HOME/.zshrc" "$DOTFILES/zsh/zshrc.sh" \
+    "ln -sfn $DOTFILES/zsh/zshrc.sh ~/.zshrc"
+  check "interactive zsh starts cleanly" "exit 0" \
+    "exit $zsh_rc${zsh_err:+, stderr: $zsh_err}" "run 'zsh -i -c \"exit 0\"' and fix what it reports"
+  local loaded p missing=()
+  # Newlines squashed to spaces: the plugin list is one line of several in
+  # $zsh_out, so the last plugin is followed by a newline rather than a space
+  # and would never match the " $p " pattern below.
+  loaded=" $(printf '%s' "${zsh_out#*PLUGINS=}" | tr '\n' ' ') "
+  for p in "${ZSH_PLUGINS[@]}"; do [[ "$loaded" == *" $p "* ]] || missing+=("$p"); done
+  check "oh-my-zsh plugins load" "${ZSH_PLUGINS[*]}" \
+    "${missing+missing: ${missing[*]}}${missing+ }${missing-${ZSH_PLUGINS[*]}}" \
+    "install the missing plugin under ~/.oh-my-zsh/custom/plugins, see INSTALL.md step 2"
+  if [ -f "$HOME/.zshrc.local" ]; then pass "~/.zshrc.local present (machine-local overrides)"
+  else warn "~/.zshrc.local absent" "optional by design, only needed for machine-local settings"; fi
+}
+
+check_starship() {
+  if command -v starship >/dev/null; then pass "starship installed ($(starship --version | head -1))"
+  else fail "starship installed" "starship on PATH" "not found" "sudo apt install -y starship"; fi
+  check "ZSH_THEME empty, starship owns the prompt" "THEME=[]" "$(printf '%s\n' "$zsh_out" | grep '^THEME=')" \
+    "leave ZSH_THEME=\"\" in zsh/zshrc.sh"
+  case "$zsh_out" in
+    *prompt_starship_precmd*) pass "starship precmd hook active" ;;
+    *) fail "starship precmd hook active" "prompt_starship_precmd in \$precmd_functions" "absent" \
+         "keep 'eval \"\$(starship init zsh)\"' at the end of zsh/zshrc.sh" ;;
+  esac
+}
+
+check_font() {
+  [ -n "${CI:-}" ] && { skip "JetBrainsMono Nerd Font installed" "CI, no fontconfig"; return; }
+  local n; n="$(fc-list 2>/dev/null | grep -c 'JetBrainsMono Nerd')"
+  if [ "$n" -gt 0 ]; then pass "JetBrainsMono Nerd Font installed ($n faces)"
+  else fail "JetBrainsMono Nerd Font installed" "at least one face" "none" \
+    "install it into ~/.local/share/fonts and run fc-cache -f, see INSTALL.md step 3"; fi
+}
+
+# The repository dump stores __HOME__ where the live value has the real home.
+guake_expected() { # section key
+  # \%...% instead of /.../ for the address: section names such as style/font
+  # contain a slash, which would otherwise terminate the regex early.
+  sed -n "\%^\[$1\]%,/^$/p" "$DOTFILES/guake/guake.dconf" |
+    sed -n "s|^$2=||p" | sed "s|__HOME__|$HOME|g; s|^'||; s|'$||"
+}
+
+check_guake() {
+  [ -n "${CI:-}" ] && { skip "guake dconf settings" "CI, no dconf database"; return; }
+  local entry schema section key got
+  for entry in "general default-shell" "general window-height" "general history-size" \
+               "general quick-open-command-line" "style/font style"; do
+    section="${entry% *}"; key="${entry#* }"; schema="guake.${section//\//.}"
+    got="$(gsettings get "$schema" "$key" 2>&1 | sed "s|^'||; s|'$||")"
+    check "guake $section/$key" "$(guake_expected "$section" "$key")" "$got" \
+      "sed \"s|__HOME__|\$HOME|g\" $DOTFILES/guake/guake.dconf | dconf load /org/guake/ and restart guake"
+  done
+}
+
+# `git config --global --list` defaults to --no-includes, so the included file
+# is invisible without asking for it explicitly.
+check_git_config() {
+  local want="$DOTFILES/git/gitconfig" got excludes
+  got="$(git config --global --includes --get-all include.path | sed "s|^~|$HOME|")"
+  if printf '%s\n' "$got" | grep -qxF "$want"; then pass "~/.gitconfig includes git/gitconfig"
+  else fail "~/.gitconfig includes git/gitconfig" "$want" "${got:-no include.path}" \
+    "put '[include] path = $want' at the top of ~/.gitconfig, see INSTALL.md step 5"; fi
+  excludes="$(git config --global --includes core.excludesFile | sed "s|^~|$HOME|")"
+  if [ -f "$excludes" ]; then pass "core.excludesFile resolves to an existing file ($excludes)"
+  else fail "core.excludesFile" "a readable file" "${excludes:-unset} (missing)" \
+    "check core.excludesFile in git/gitconfig points at $DOTFILES/git/gitignore"; fi
+}
+
+# No address is asserted by name: this repository is public. What is asserted is
+# that the includeIf actually fired, which is proved by the address inside the
+# directory differing from the default one.
+git_identity() { # directory
+  local dir="$1" repo got
+  [ -d "$dir" ] || { warn "git identity under $dir" "directory absent on this machine"; return; }
+  repo="$(find "$dir" -maxdepth 2 -name .git -printf '%h\n' -quit 2>/dev/null)"
+  [ -n "$repo" ] || { warn "git identity under $dir" "no repository there to resolve includeIf against"; return; }
+  got="$(git -C "$repo" config user.email)"
+  if [ -n "$got" ] && [ "$got" != "$DEFAULT_EMAIL" ]; then
+    pass "git identity under $dir resolves to its own address ($got)"
+  else
+    fail "git identity under $dir" "an address of its own" "${got:-unset}" \
+      "check the [includeIf \"gitdir:...\"] block in ~/.gitconfig, the trailing slash is required"
+  fi
+}
+
+check_git_identities() {
+  local dir
+  DEFAULT_EMAIL="$(git -C /tmp config user.email)"
+  if [ -n "$DEFAULT_EMAIL" ]; then pass "default git identity set ($DEFAULT_EMAIL)"
+  else fail "default git identity" "an address" "unset" \
+    "set [user] name and email in ~/.gitconfig, below the include, see INSTALL.md step 5"; fi
+  for dir in "$HOME"/Projects/*/; do
+    [ -f "$HOME/.gitconfig" ] &&
+      grep -qF "gitdir:~/Projects/$(basename "$dir")/" "$HOME/.gitconfig" &&
+      git_identity "${dir%/}"
+  done
+}
+
+# git only tracks the executable bit, and core.fileMode=false drops even that,
+# so a fresh clone arrives group-writable and ssh refuses to read it. Nothing
+# else catches this regression.
+check_ssh() {
+  check_link "~/.ssh/config is a symlink into the repository" "$HOME/.ssh/config" "$DOTFILES/ssh/config" \
+    "ln -sfn $DOTFILES/ssh/config ~/.ssh/config"
+  check "ssh/config permissions" 600 "$(stat -c '%a' "$DOTFILES/ssh/config")" \
+    "chmod 600 $DOTFILES/ssh/config, ssh rejects a group-writable config"
+  if [ -f "$HOME/.ssh/id_ed25519" ]; then pass "~/.ssh/id_ed25519 present"
+  else warn "~/.ssh/id_ed25519 absent" "pending manual work: ssh-keygen -t ed25519 in a real terminal, then register it on GitHub"; fi
+}
+
+check_docker() {
+  check "docker daemon" active "$(systemctl is-active docker 2>&1)" "sudo systemctl start docker"
+  if cmp -s "$DOTFILES/docker/daemon.json" /etc/docker/daemon.json; then
+    pass "/etc/docker/daemon.json matches docker/daemon.json"
+  else fail "/etc/docker/daemon.json" "a copy of $DOTFILES/docker/daemon.json" "different or missing" \
+    "sudo install -o root -g root -m 644 $DOTFILES/docker/daemon.json /etc/docker/daemon.json && sudo systemctl restart docker"; fi
+  local group_ok=no
+  if id -nG | grep -qw docker; then pass "user is in the docker group"; group_ok=yes
+  elif getent group docker | grep -qw "$USER"; then
+    warn "docker group not active in this session" "membership exists in /etc/group, log out and back in (or use newgrp docker)"
+  else fail "user is in the docker group" "$USER in group docker" "not a member" "sudo usermod -aG docker $USER, then log out and back in"; fi
+  local live; live="$(docker info --format '{{.LoggingDriver}} {{.LiveRestoreEnabled}}' 2>&1)"
+  if [ "$group_ok" = no ] && [ "$live" != "json-file true" ]; then
+    warn "live log driver options not verifiable" "docker CLI unreachable until the docker group is active in this session"
+  else check "live log driver options" "json-file true" "$live" \
+    "sudo systemctl restart docker so /etc/docker/daemon.json is picked up"; fi
+}
+
+check_claude() {
+  local src="$DOTFILES/claude" f
+  [ -d "$src" ] || { warn "claude/ linked into ~/.claude" "$src does not exist in the repository yet"; return; }
+  [ -d "$HOME/.claude" ] || { warn "claude/ linked into ~/.claude" "~/.claude does not exist yet"; return; }
+  for f in "$src"/*; do
+    check_link "~/.claude/$(basename "$f")" "$HOME/.claude/$(basename "$f")" "$f" \
+      "ln -sfn $f ~/.claude/$(basename "$f")"
+  done
+}
+
+check_dangling() {
+  local p broken=()
+  for p in "$HOME/.zshrc" "$HOME/.ssh/config" "$HOME/.gitconfig" "$HOME/.claude"/*; do
+    [ -L "$p" ] && [ ! -e "$p" ] && broken+=("$p -> $(readlink "$p")")
+  done
+  if [ ${#broken[@]} -eq 0 ]; then pass "no dangling symlinks among the installed files"
+  else fail "no dangling symlinks" "every installed symlink resolves" "${broken[*]}" \
+    "re-run install.sh, or delete the stale link"; fi
+}
+
+printf 'doctor: checking %s against %s\n' "$(hostname)" "$DOTFILES"
+section "shell";    check_login_shell; probe_zsh; check_zsh
+section "prompt";   check_starship; check_font
+section "guake";    check_guake
+section "git";      check_git_config; check_git_identities
+section "ssh";      check_ssh
+section "docker";   check_docker
+section "claude";   check_claude
+section "symlinks"; check_dangling
+
+printf '\n%s\n' "== summary =="
+printf '  %d passed, %d failed, %d warnings, %d skipped\n' "$pass_n" "$fail_n" "$warn_n" "$skip_n"
+[ "$fail_n" -eq 0 ] || printf '  %sfix the failures above%s\n' "$C_NO" "$C_0"
+[ "$fail_n" -eq 0 ]
