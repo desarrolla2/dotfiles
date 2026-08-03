@@ -1,0 +1,26 @@
+# Ignore rules for this repository only.
+# The global excludes file shared by every project lives in git/gitignore and
+# is installed through core.excludesFile. Project-agnostic patterns belong in
+# that file, not here.
+
+# PhpStorm project directory. Module paths, inspection profiles and window
+# state are specific to one machine and are regenerated on open.
+/.idea/
+
+# Claude Code per-machine settings. A shared .claude/settings.json, if one is
+# ever added, stays tracked on purpose; only the local override is ignored.
+/.claude/settings.local.json
+
+# Editor leftovers. These are also in the global excludes file, but that file
+# is not active until ~/.gitconfig is installed, which happens after this
+# repository is cloned. Repeating the two likeliest ones covers that gap.
+*~
+*.swp
+
+# Private key material. This repository is public and holds ssh/config, so a
+# key dropped next to it would be published. Keys are generated per machine
+# and never belong here.
+id_rsa*
+id_ed25519*
+*.pem
+*.key
