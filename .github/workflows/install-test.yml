@@ -1,0 +1,242 @@
+# The monthly cron is the trigger that matters. This repository went from 2020 to
+# 2026 with almost no commits while the configs inside it kept pointing at tools
+# and URLs that had stopped existing. Rot here is not caused by commits, it is
+# caused by the outside world moving while the repository stands still, so CI on
+# push alone would have been silent through that whole window.
+#
+# GitHub disables scheduled workflows on public repositories after 60 days of
+# inactivity — the same inactivity this exists to survive. It emails first, and
+# any push or a manual run re-arms it.
+
+name: install test
+
+on:
+  schedule:
+    # Odd minute on purpose: jobs on the hour are the ones GitHub delays.
+    - cron: '12 6 1 * *'
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # install.sh reads CI to skip what needs a GUI, a login session or 124 MB of
+  # font download.
+  CI: 'true'
+  DEBIAN_FRONTEND: noninteractive
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  # A bare container, not the runner: the runner image ships curl, git, unzip,
+  # zsh and jq, every one of which masks a dependency install.sh forgot to
+  # install. This is the closest CI gets to a freshly formatted machine.
+  container:
+    name: install on a clean ubuntu container
+    runs-on: ubuntu-latest
+    container: ubuntu:latest
+    timeout-minutes: 30
+    steps:
+      # Only what CI itself needs. curl, unzip, zsh and starship are what
+      # install.sh is supposed to install, so they stay absent on purpose.
+      - run: apt-get update && apt-get install -y --no-install-recommends ca-certificates git
+      - uses: actions/checkout@v5
+
+      - name: install.sh is executable
+        # core.fileMode is false, so a lost executable bit is easy to commit and
+        # impossible to notice locally.
+        run: |
+          test -x install.sh || {
+            echo "::error file=install.sh::not executable. Fix: git update-index --chmod=+x install.sh"
+            exit 1
+          }
+
+      - run: ./install.sh --list-steps
+      - run: ./install.sh --dry-run
+
+      - name: Every step except docker
+        # A container has no daemon to restart and no socket to query, so the
+        # docker step would install 500 MB and verify nothing. It runs for real
+        # in the runner job.
+        run: |
+          set -euo pipefail
+          export USER="${USER:-$(id -un)}"
+          for step in $(./install.sh --list-steps); do
+            [ "$step" = docker ] && continue
+            echo "::group::${step}"
+            ./install.sh --step "$step"
+            echo "::endgroup::"
+          done
+
+      - name: An interactive zsh starts and loads its plugins
+        run: zsh -i -c 'print -l $plugins'
+
+      - name: bin/doctor (informational)
+        # Its docker checks need systemd and a real daemon, which no container
+        # has. The build-failing run is the one below.
+        continue-on-error: true
+        run: USER="${USER:-$(id -un)}" bash bin/doctor
+
+  # The authoritative run: a real machine with systemd, a docker daemon and a
+  # non-root user with sudo. The only place the docker step and doctor's verdict
+  # mean anything.
+  runner:
+    name: install on the runner (docker step included)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Seed the manual git identity from INSTALL.md step 5
+        # install.sh refuses to write the identity, so doctor cannot judge it
+        # unless CI provides it. Seeding it first also forces install.sh down its
+        # "prepend the include to an existing ~/.gitconfig" branch, and doctor
+        # then proves the identity still resolves underneath it. The addresses
+        # are throwaway; doctor asserts the includeIf fired, not who you are.
+        run: |
+          set -euo pipefail
+          cat > "$HOME/.gitconfig" <<'EOF'
+          [user]
+          	name = CI
+          	email = default@example.invalid
+
+          [includeIf "gitdir:~/Projects/devtia/"]
+          	path = ~/.gitconfig-devtia
+          EOF
+          printf '[user]\n\temail = devtia@example.invalid\n' > "$HOME/.gitconfig-devtia"
+          # doctor resolves the include against a real repository under the
+          # directory, so there has to be one. The trailing slash in the gitdir:
+          # pattern is what makes it match a tree, and this proves it still does.
+          git init -q "$HOME/Projects/devtia/identity-probe"
+
+      - run: USER="${USER:-$(id -un)}" ./install.sh
+      - run: USER="${USER:-$(id -un)}" ./bin/doctor
+
+  # Everything that rotted in this repository rotted out here, not in it: a URL
+  # that moved, a release asset that was yanked, a package Ubuntu dropped. Checked
+  # directly, so a failure names the dependency instead of being a confused apt
+  # error halfway through an install log. In a clean container because the
+  # question is whether a fresh Ubuntu can still install these.
+  external:
+    name: external dependencies still exist
+    runs-on: ubuntu-latest
+    container: ubuntu:latest
+    timeout-minutes: 15
+    steps:
+      - run: apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git jq
+      - uses: actions/checkout@v5
+
+      - name: oh-my-zsh install script
+        run: |
+          set -euo pipefail
+          # -f turns the 404 into a failure. This is the one that bit: the script
+          # moved from robbyrussell/oh-my-zsh and the old URL was wrong for years.
+          url=$(grep -oP 'OMZ_URL="\K[^"]+' install.sh)
+          echo "$url"
+          curl -fsSL "$url" -o /tmp/omz.sh
+          grep -q 'ohmyzsh/ohmyzsh' /tmp/omz.sh
+          # install.sh depends on these to not touch the login shell, not start
+          # zsh and not overwrite the symlinked ~/.zshrc. A silent rename upstream
+          # would be worse than a hard failure.
+          for var in RUNZSH CHSH KEEP_ZSHRC; do
+            grep -q "$var" /tmp/omz.sh || {
+              echo "::error::the oh-my-zsh installer no longer honours \$${var}"; exit 1
+            }
+          done
+
+      - name: Pinned Nerd Font release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag=$(grep -oP 'NERD_FONT_VERSION="\K[^"]+' install.sh)
+          echo "$tag"
+          curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" \
+            "https://api.github.com/repos/ryanoasis/nerd-fonts/releases/tags/${tag}" -o /tmp/rel.json
+          # The tag existing is not enough: the asset has to still be attached and
+          # still be a real ~124 MB zip rather than a stub.
+          jq -e '(.assets[] | select(.name == "JetBrainsMono.zip") | .size)
+                 | if . > 50000000 then . else error("asset too small: \(.)") end' /tmp/rel.json
+          # And downloadable, which a 1 KB ranged GET proves without pulling 124 MB.
+          curl -fsSL -r 0-1023 -o /dev/null \
+            "https://github.com/ryanoasis/nerd-fonts/releases/download/${tag}/JetBrainsMono.zip"
+
+      - name: zsh plugin repositories
+        run: |
+          set -euo pipefail
+          # The cheapest thing that proves an anonymous clone still works.
+          for repo in zsh-autosuggestions zsh-syntax-highlighting; do
+            git ls-remote --exit-code "https://github.com/zsh-users/${repo}.git" HEAD >/dev/null
+            echo "ok  zsh-users/${repo}"
+          done
+
+      - name: Every apt package still installable
+        run: |
+          set -euo pipefail
+          . /etc/os-release
+          echo "checking against ${PRETTY_NAME}"
+          # Read from the file, so a package added to the list is checked from
+          # then on without anybody remembering to update CI.
+          mapfile -t packages < <(sed 's/#.*//' apt/packages.txt | tr -s '[:space:]' '\n' | grep -v '^$')
+          echo "${#packages[@]} packages"
+          fail=0
+          for pkg in "${packages[@]}"; do
+            candidate=$(apt-cache policy "$pkg" 2>/dev/null | awk '/Candidate:/ {print $2}')
+            # --simulate resolves dependencies too, so an uninstallable package
+            # fails here for the same reason it would on a real machine.
+            if apt-get install -y --no-install-recommends --simulate "$pkg" >/dev/null 2>&1; then
+              printf 'ok  %-20s %s\n' "$pkg" "$candidate"
+            else
+              echo "::error file=apt/packages.txt::'${pkg}' is no longer installable on ${PRETTY_NAME} (candidate: ${candidate:-none})"
+              fail=1
+            fi
+          done
+          exit "$fail"
+
+      - name: Docker publishes this Ubuntu release
+        run: |
+          set -euo pipefail
+          # docker-ce comes from download.docker.com, which lags new Ubuntu
+          # releases. On a fresh one this 404s and the docker step cannot work.
+          codename=$(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+          curl -fsSL -o /dev/null "https://download.docker.com/linux/ubuntu/dists/${codename}/Release"
+          curl -fsSL -o /dev/null https://download.docker.com/linux/ubuntu/gpg
+          echo "ok  ${codename}"
+
+  # Catches code that is wrong on a path the install happens not to take.
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends shellcheck zsh
+
+      - name: shellcheck
+        # zsh/ is excluded because shellcheck cannot parse zsh. SC1091 is sourcing
+        # a file that only exists on the real machine; SC2088 fires on the literal
+        # tilde in messages printed for a human, sixteen times, all wrong.
+        run: shellcheck -x -e SC1091,SC2088 install.sh bin/doctor claude/statusline-command.sh
+
+      - name: zsh syntax
+        run: zsh -n zsh/zshrc.sh
+
+      - name: JSON parses
+        run: |
+          set -euo pipefail
+          # A malformed daemon.json stops the docker daemon from starting at all.
+          test -f docker/daemon.json
+          for file in $(git ls-files '*.json'); do
+            python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$file"
+            echo "ok  $file"
+          done
