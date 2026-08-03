@@ -2,9 +2,10 @@
 
 Fresh Ubuntu machine, in order. Every step is idempotent.
 
-Run [MIGRATION.md](MIGRATION.md) on the **old** machine first. It lists what this
-repository cannot rebuild: unpushed work, `~/.zshrc.local`, the git identity
-files, the ssh keys, the guake dconf dump, and a finished Dropbox sync.
+Before wiping the old machine, rescue what this repository deliberately cannot
+rebuild: unpushed work, `~/.zshrc.local`, the git identity files, the ssh keys,
+the guake dconf dump (it exists only in dconf until someone exports it), and a
+finished Dropbox sync.
 
 `install.sh` is the source of truth for every automated command. This document
 only covers what a script cannot do.

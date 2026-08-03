@@ -42,7 +42,6 @@ git identity, and the four apps that end in an account login.
 | `ssh/` | ssh client config |
 | `zsh/zshrc.sh` | the zshrc |
 | `install.sh` | the installer |
-| `MIGRATION.md` | what to rescue from the old machine first |
 
 Files are symlinked, so editing the live config edits the repository. The one
 exception is `docker/daemon.json`, copied to `/etc/docker/` because a root

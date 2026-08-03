@@ -33,7 +33,7 @@ graphical dialog.
 ## Layout
 
 One directory per tool: `apt/ bin/ claude/ docker/ docs/ git/ guake/ ssh/ zsh/`,
-plus `install.sh`, `INSTALL.md` and `MIGRATION.md`. See README.md.
+plus `install.sh` and `INSTALL.md`. See README.md.
 
 Files are symlinked, so editing the live config edits the repository. The one
 exception is `docker/daemon.json`, copied to `/etc/docker/` because a root
