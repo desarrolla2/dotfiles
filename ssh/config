@@ -1,4 +1,50 @@
+# SSH client configuration.
+#
+# Symlinked to ~/.ssh/config. The file must be mode 600: ssh refuses to read a
+# config that is group- or world-writable ("Bad owner or permissions").
+#
+# Settings apply to every host. Anything host-specific or machine-specific
+# (internal hostnames, jump hosts, per-project keys) does not belong here.
+
 Host *
+
+  # Keep idle connections alive. Without this, NAT routers and firewalls drop
+  # sessions that look inactive and a long build or an open shell dies with
+  # "Broken pipe". A probe is sent every 120s and the connection is only given
+  # up after 3 unanswered probes, so a 6 minute outage is survived.
   TCPKeepAlive yes
   ServerAliveInterval 120
+  ServerAliveCountMax 3
+
+  # Identities, in the order ssh should try them. Ed25519 is the current
+  # default: shorter keys, faster, and no key size to get wrong.
+  # The RSA key is the original 2048-bit one from 2014, kept only for hosts
+  # that have not been migrated to the new key yet. Remove it once the last
+  # of those is updated.
+  IdentityFile ~/.ssh/id_ed25519
   IdentityFile ~/.ssh/id_rsa
+
+  # Offer only the keys listed above, not everything the agent happens to hold.
+  # Without this ssh presents every agent key in turn, and a server with a low
+  # MaxAuthTries closes the connection ("Too many authentication failures")
+  # before the right key is ever reached.
+  IdentitiesOnly yes
+
+  # Add a key to the running agent the first time it is used, so the
+  # passphrase is typed once per login session instead of once per connection.
+  AddKeysToAgent yes
+
+  # Store host keys as hashes in ~/.ssh/known_hosts instead of plain
+  # hostnames, so the file does not become a readable list of every machine
+  # reachable from here.
+  HashKnownHosts yes
+
+  # Connection multiplexing. The first connection to a host opens a master
+  # session; later ones reuse it instead of repeating the TCP handshake, key
+  # exchange and authentication. This is what makes a sequence of git fetch /
+  # push operations feel instant. The socket is kept for 10 minutes after the
+  # last session closes. %C is a hash of host, port and user, which keeps the
+  # socket path short enough for the filesystem.
+  ControlMaster auto
+  ControlPath ~/.ssh/control-%C
+  ControlPersist 10m
