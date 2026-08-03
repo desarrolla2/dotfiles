@@ -72,7 +72,7 @@ reached that path before it can do anything useful.
 On this machine the Dropbox folder is:
 
 ```
-/home/daniel/Documents/Dropbox
+$HOME/Documents/Dropbox
 ```
 
 **Not** `~/Dropbox`. A fresh install defaults to `~/Dropbox` and never asks
@@ -89,7 +89,7 @@ Dropbox records the choice in `~/.dropbox/info.json`, which on this machine
 reads:
 
 ```json
-{"personal": {"path": "/home/daniel/Documents/Dropbox", "host": ..., "is_team": false, "subscription_type": "Pro"}}
+{"personal": {"path": "$HOME/Documents/Dropbox", "host": ..., "is_team": false, "subscription_type": "Pro"}}
 ```
 
 That file is the authoritative answer to "did I get the path right".
@@ -166,7 +166,7 @@ from this repository.
 # expects: Up to date
 dropbox status
 
-# expects {"personal": {"path": "/home/daniel/Documents/Dropbox", ...
+# expects {"personal": {"path": "$HOME/Documents/Dropbox", ...
 cat ~/.dropbox/info.json
 
 # expects "ok": the folder is at the non-default path and ~/Dropbox does not exist
@@ -328,7 +328,7 @@ Verified:
   `apps/phpstorm/bin/phpstorm "$@"`.
 - Toolbox writes the scripts location itself, in
   `~/.local/share/JetBrains/Toolbox/.settings.json`:
-  `"shell_scripts": {"location": "/home/daniel/.local/share/JetBrains/Toolbox/scripts"}`.
+  `"shell_scripts": {"location": "$HOME/.local/share/JetBrains/Toolbox/scripts"}`.
   That is the setting the two repository files depend on. It is Toolbox's
   default, but confirm it rather than assume it.
 - Autostart is `~/.config/autostart/jetbrains-toolbox.desktop`, written by
@@ -452,9 +452,9 @@ Code is last.
 
 Verified: the **native installer**, not apt and not npm.
 
-- `which claude` → `/home/daniel/.local/bin/claude`
+- `which claude` → `$HOME/.local/bin/claude`
 - that path is a symlink to
-  `/home/daniel/.local/share/claude/versions/2.1.220`
+  `$HOME/.local/share/claude/versions/2.1.220`
 - `claude --version` → `2.1.220 (Claude Code)`
 - `npm` is not installed on this machine at all, so an npm global install is
   ruled out
@@ -481,7 +481,7 @@ here (version `1.24012.9`) from
 key at `/usr/share/keyrings/claude-desktop-archive-keyring.asc`. That is the
 GUI desktop application, a different product from the CLI, installed from a
 `.deb` (apt history: `apt install
-/home/daniel/Downloads/claude-desktop_amd64.deb`, which pulled in a large qemu
+$HOME/Downloads/claude-desktop_amd64.deb`, which pulled in a large qemu
 dependency set for its sandbox). Both write to `~/.claude/`, which is worth
 remembering if you ever try to uninstall one.
 
