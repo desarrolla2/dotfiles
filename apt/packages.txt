@@ -67,6 +67,14 @@ guake               # the drop-down terminal opened with F12, the terminal actua
 
 dconf-cli           # provides /usr/bin/dconf, which loads and dumps guake/guake.dconf; guake itself does not depend on it, it only arrives on a desktop install as a gdm3 dependency, so it is listed here rather than assumed
 
+# ------------------------------------------------------------- url handlers --
+
+# Same trap as dconf-cli above: both are already present on a GNOME desktop as
+# somebody else's dependency, so the handlers step appears to work until it runs
+# on a machine that is not one.
+xdg-utils           # provides xdg-mime, which registers bin/phpstorm-url-handler for the phpstorm:// scheme
+desktop-file-utils  # provides update-desktop-database, which the desktop file is not picked up without
+
 # --------------------------------------------------------------- php on host --
 
 # Every project's PHP runs in Docker with its own pinned version. These are the

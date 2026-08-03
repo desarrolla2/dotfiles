@@ -196,6 +196,39 @@ check_claude() {
   done
 }
 
+# A URL handler fails silently by design: the browser hands the link over and
+# nothing happens. These four checks are the only warning you get.
+check_handlers() {
+  local handler="$DOTFILES/bin/phpstorm-url-handler"
+  local desktop="$HOME/.local/share/applications/phpstorm-url-handler.desktop"
+  local launcher="$HOME/.local/share/JetBrains/Toolbox/scripts/phpstorm"
+  local scheme
+
+  if [ -x "$handler" ]; then pass "bin/phpstorm-url-handler is executable"
+  else fail "bin/phpstorm-url-handler is executable" "an executable file" \
+    "$([ -f "$handler" ] && echo 'present but not executable' || echo absent)" \
+    "chmod +x $handler"; fi
+
+  if [ -f "$desktop" ]; then
+    check "the desktop file points at this repository" "Exec=$handler %u" \
+      "$(grep '^Exec=' "$desktop")" "re-run ./install.sh --step handlers"
+  else
+    fail "phpstorm-url-handler.desktop installed" "$desktop" "absent" \
+      "./install.sh --step handlers"
+  fi
+
+  for scheme in phpstorm pstorm; do
+    check "$scheme:// is registered" "phpstorm-url-handler.desktop" \
+      "$(xdg-mime query default "x-scheme-handler/$scheme" 2>/dev/null)" \
+      "xdg-mime default phpstorm-url-handler.desktop x-scheme-handler/$scheme"
+  done
+
+  # The handler resolves the launcher by absolute path, so its absence is the
+  # one thing that turns a working registration into a click that does nothing.
+  if [ -x "$launcher" ]; then pass "the PhpStorm launcher exists ($launcher)"
+  else warn "the PhpStorm launcher" "$launcher absent; install PhpStorm from JetBrains Toolbox and enable its shell scripts"; fi
+}
+
 check_dangling() {
   local p broken=()
   for p in "$HOME/.zshrc" "$HOME/.ssh/config" "$HOME/.gitconfig" "$HOME/.claude"/*; do
@@ -214,6 +247,7 @@ section "git";      check_git_config; check_git_identities
 section "ssh";      check_ssh
 section "docker";   check_docker
 section "claude";   check_claude
+section "handlers"; check_handlers
 section "symlinks"; check_dangling
 
 printf '\n%s\n' "== summary =="

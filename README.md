@@ -19,7 +19,7 @@ cd ~/Projects/devtia/dotfiles
 Steps run in this order and each one is idempotent:
 
 ```
-packages  zsh  starship  guake  git  ssh  docker  claude
+packages  zsh  starship  guake  git  ssh  docker  claude  handlers
 ```
 
 Run one on its own with `./install.sh --step docker`. Nothing is ever deleted:
@@ -34,6 +34,7 @@ git identity, and the four apps that end in an account login.
 |---|---|
 | `apt/packages.txt` | every apt package, with the reason for each |
 | `bin/doctor` | checks the machine matches the docs |
+| `bin/phpstorm-url-handler` | opens `phpstorm://file&line` links at that line |
 | `claude/` | Claude Code global config |
 | `docker/` | daemon config: log rotation, live-restore |
 | `docs/manual.md` | Dropbox, Chrome, JetBrains Toolbox, Claude Code |

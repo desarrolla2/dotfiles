@@ -165,7 +165,34 @@ See [docs/manual.md](docs/manual.md) for each procedure. Order matters:
    `./install.sh --step claude` links the config into `~/.claude`. Never copy
    `~/.claude/.credentials.json` between machines: it is a live OAuth token.
 
-## 9. Shared Dropbox symlinks
+## 9. phpstorm:// links
+
+```sh
+./install.sh --step handlers
+```
+
+Registers `bin/phpstorm-url-handler` for `phpstorm://` and `pstorm://`, so a
+file and line in a stack trace, an Xdebug error page or a CI log opens at that
+line. Needs PhpStorm installed first (step 8), because the handler calls the
+launcher Toolbox creates.
+
+Test it:
+
+```sh
+gio open "phpstorm://open?url=file://$PWD/install.sh&line=35"
+```
+
+Not upstream's `sanduhrs/phpstorm-url-handler`, which cannot work with a current
+PhpStorm: it runs `phpstorm --line N file`, and the launcher rejects `--line`
+unless a project directory comes first. The handler here finds that directory by
+walking up for `.idea`, then a git root. Upstream also finishes with `wmctrl`,
+which does nothing under Wayland.
+
+A URL handler that fails does so silently, so this one logs every call to
+`~/.cache/phpstorm-url-handler.log` and raises a desktop notification on error.
+Check that file first when a click does nothing.
+
+## 10. Shared Dropbox symlinks
 
 Per-project Claude config and notes are shared through Dropbox by the Dropbox
 `claude` project, which owns its own manifest. Not this repository's job. Needs
@@ -177,7 +204,7 @@ make symlink-simular    # dry run
 make symlink
 ```
 
-## 10. Verify
+## 11. Verify
 
 ```sh
 ./bin/doctor
@@ -188,4 +215,4 @@ fails. A `WARN` is not a failure — a missing `~/.zshrc.local` and a `docker`
 group not yet active in this session are both expected on a fresh machine.
 
 Three checks stay manual because doctor cannot make them: the package list
-(step 3), `ssh -T git@github.com` (step 6), and `make symlink-simular` (step 9).
+(step 3), `ssh -T git@github.com` (step 6), and `make symlink-simular` (step 10).

@@ -16,7 +16,7 @@ DOTFILES="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 BACKUP_DIR="$HOME/.backup"
 
 # Order matters: later steps need packages installed by earlier ones.
-STEPS=(packages zsh starship guake git ssh docker claude)
+STEPS=(packages zsh starship guake git ssh docker claude handlers)
 
 OMZ_DIR="$HOME/.oh-my-zsh"
 OMZ_URL="https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh"
@@ -441,6 +441,65 @@ step_claude() {
       run chmod +x "$file"
     fi
     link "$file" "$dst/$rel"
+  done
+}
+
+# ------------------------------------------------------------------ handlers --
+
+# Registers bin/phpstorm-url-handler for phpstorm:// and pstorm:// links, so a
+# file:line in a stack trace or an Xdebug error page opens at that line.
+step_handlers() {
+  local handler="$DOTFILES/bin/phpstorm-url-handler"
+  local apps="$HOME/.local/share/applications"
+  local desktop="$apps/phpstorm-url-handler.desktop"
+  local scheme expected current
+
+  [[ -f "$handler" ]] || { warn "$handler not found, nothing to register"; return 0; }
+
+  if [[ ! -x "$handler" ]]; then
+    act "chmod +x bin/phpstorm-url-handler"
+    run chmod +x "$handler"
+  fi
+
+  for scheme in xdg-mime update-desktop-database; do
+    command -v "$scheme" >/dev/null ||
+      { warn "$scheme not installed, cannot register the URL handler"; return 0; }
+  done
+
+  # Generated rather than tracked: Exec has to be an absolute path, because the
+  # desktop session's PATH has neither ~/.local/bin nor the Toolbox scripts
+  # directory, and a desktop file expands neither ~ nor $HOME.
+  expected="[Desktop Entry]
+Version=1.0
+Type=Application
+Name=PhpStorm URL Handler
+Comment=Handle phpstorm://open?url=file://@file&line=@line
+Icon=phpstorm
+NoDisplay=true
+Categories=TextEditor;Utility;
+Terminal=false
+MimeType=x-scheme-handler/phpstorm;x-scheme-handler/pstorm;
+Exec=$handler %u"
+
+  current="$(cat "$desktop" 2>/dev/null || true)"
+  if [[ "$current" == "$expected" ]]; then
+    ok "$desktop up to date"
+  elif ((DRY_RUN)); then
+    act "would write $desktop"
+  else
+    mkdir -p -- "$apps"
+    printf '%s\n' "$expected" >"$desktop"
+    act "wrote $desktop"
+    run update-desktop-database "$apps"
+  fi
+
+  for scheme in phpstorm pstorm; do
+    if [[ "$(xdg-mime query default "x-scheme-handler/$scheme" 2>/dev/null)" == "phpstorm-url-handler.desktop" ]]; then
+      ok "$scheme:// handled by phpstorm-url-handler"
+    else
+      act "registering $scheme:// "
+      run xdg-mime default phpstorm-url-handler.desktop "x-scheme-handler/$scheme"
+    fi
   done
 }
 

@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+#
+# Open phpstorm://open?url=file://<file>&line=<n> links in PhpStorm.
+#
+# Registered as the handler for the phpstorm:// and pstorm:// schemes by
+# install.sh, so a file:line link in a stack trace, an Xdebug error page or a CI
+# log opens at the right line.
+#
+# Written here instead of using sanduhrs/phpstorm-url-handler, which no longer
+# works: it calls `phpstorm --line N file`, and the current launcher rejects
+# --line unless a project directory comes first. It also ends by calling wmctrl
+# to raise the window, which does nothing under Wayland.
+#
+set -uo pipefail
+
+# The desktop file cannot rely on the session PATH: it contains neither
+# ~/.local/bin nor the JetBrains Toolbox scripts directory.
+PHPSTORM="${PHPSTORM:-$HOME/.local/share/JetBrains/Toolbox/scripts/phpstorm}"
+
+# A click that silently does nothing is the failure mode of every URL handler,
+# and a browser gives no output to look at. This is where to look.
+LOG="${XDG_CACHE_HOME:-$HOME/.cache}/phpstorm-url-handler.log"
+
+log() {
+  mkdir -p -- "$(dirname -- "$LOG")"
+  printf '%s  %s\n' "$(date -Is)" "$*" >>"$LOG"
+}
+
+die() {
+  log "ERROR: $*"
+  # notify-send so a failed click says something instead of nothing.
+  command -v notify-send >/dev/null &&
+    notify-send -u critical "PhpStorm URL handler" "$*"
+  exit 1
+}
+
+url="${1:-}"
+[[ -n "$url" ]] || die "no URL given"
+log "url: $url"
+
+# %XX unescaping. The URL arrives from a browser, so a path with a space is
+# %20 and any of the pattern characters below could be escaped.
+url="${url//+/ }"
+printf -v url '%b' "${url//%/\\x}" 2>/dev/null || die "cannot decode: $1"
+
+# The four forms upstream accepted:
+#   phpstorm://open?url=file://<file>&line=<n>
+#   phpstorm://open?file=<file>&line=<n>
+#   phpstorm://open?url=file://<file>:<n>
+#   phpstorm://open?file=<file>:<n>
+pattern='.*file(://|=)(.*)(:|&line=)(.*)'
+if [[ "$url" =~ $pattern ]]; then
+  file="${BASH_REMATCH[2]}"
+  line="${BASH_REMATCH[4]}"
+else
+  # No line number at all, just a file.
+  file="${url#*file://}"
+  file="${file#*file=}"
+  file="${file%%&*}"
+  line=1
+fi
+
+# Anything not a digit is not a line number. The value comes from a web page.
+line="${line//[^0-9]/}"
+: "${line:=1}"
+
+[[ -n "$file" ]] || die "no file in URL: $1"
+[[ "$file" == /* ]] || die "not an absolute path: $file"
+[[ -f "$file" ]] || die "file does not exist: $file"
+[[ -x "$PHPSTORM" ]] || die "phpstorm launcher not found at $PHPSTORM"
+
+# The launcher needs the project directory before --line, so find the innermost
+# one containing the file: .idea is PhpStorm's own project marker, and a git
+# root is the best guess when the project has never been opened.
+project=""
+dir="$(dirname -- "$(readlink -f -- "$file")")"
+while [[ "$dir" != / ]]; do
+  if [[ -d "$dir/.idea" ]]; then project="$dir"; break; fi
+  [[ -z "$project" && -e "$dir/.git" ]] && project="$dir"
+  dir="$(dirname -- "$dir")"
+done
+: "${project:=$(dirname -- "$file")}"
+
+log "opening $file:$line in project $project"
+exec "$PHPSTORM" "$project" --line "$line" "$file"
