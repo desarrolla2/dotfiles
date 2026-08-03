@@ -1,61 +1,68 @@
-# Introduction
+# dotfiles
 
-This are my personal dotfiles, i use this repository to share some of my configs about several computers, you can use it
-to get any ideas about how i work, but be careful is possible that this repo is not updated.
+My Ubuntu configuration: zsh, starship, guake, git, ssh, docker and Claude Code.
+Clone it on a freshly formatted machine, run the installer, and the machine is
+back to work.
 
-# Installation
+Public since 2014. Take what you find useful.
 
-First of all you need to clone the entire project.
+## Install
 
-```zsh
-git clone git@github.com:desarrolla2/dotfiles.git
+```sh
+git clone https://github.com/desarrolla2/dotfiles.git ~/Projects/devtia/dotfiles
+cd ~/Projects/devtia/dotfiles
+./install.sh --dry-run    # shows what it would do, changes nothing
+./install.sh
+./bin/doctor              # checks the result
 ```
 
-You only need to install the components that you want.
+Steps run in this order and each one is idempotent:
 
-## zsh and oh-my-zsh
-
-1. Install zsh with `apt-get install zsh` on debian/ubuntu system. More info [here](http://www.zsh.org/).
-2. Install zsh oh-my-zsh, see more it [here](https://github.com/eyenx/omzsh).
-3. Create a symbolic link.
-
-```zsh
-ln -s /path/to/dotfiles/zsh/zshrc.sh ~/.zshrc
-ln -s /path/to/dotfiles/oh-my-zsh/desarrolla2.zsh-theme ~/.oh-my-zsh/themes/desarrolla2.zsh-theme
 ```
-This is the aspect that will have your terminal
-
-![screenshot](https://lh4.googleusercontent.com/-Cnm9OfD8PQ0/V5IV4HtZ7qI/AAAAAAAAHYA/W84Tk8vNbkMbGN7I3HA4eGIxTfWrVMzjACL0B/w1044-h157-no/desarrolla2_theme.png "Desarrolla2 theme screenshot")
-
-## tmux
-
-1. Install tmux with `apt-get install tmux` on debian/ubuntu system. More info [here](http://tmux.sourceforge.net/).
-2. Create a symbolic link.
-
-```zsh
-ln -s /path/to/dotfiles/tmux/tmux.conf ~/.tmux.conf
+packages  zsh  starship  guake  git  ssh  docker  claude
 ```
 
-I strongly recommend that you also use `guake`
+Run one on its own with `./install.sh --step docker`. Nothing is ever deleted:
+whatever is in the way of a symlink is moved to `~/.backup/`.
 
-## git
+[INSTALL.md](INSTALL.md) covers the parts a script cannot do — the ssh key, the
+git identity, and the four apps that end in an account login.
 
-1. Install tmux with `apt-get install git` on debian/ubuntu system. More info [here](https://git-scm.com/).
-2. Config your gitignore file.
+## What is here
 
-```zsh
-git config --global core.excludesfile /path/to/dotfiles/git/gitignore
-git config core.fileMode false
- ```
+| Path | |
+|---|---|
+| `apt/packages.txt` | every apt package, with the reason for each |
+| `bin/doctor` | checks the machine matches the docs |
+| `claude/` | Claude Code global config |
+| `docker/` | daemon config: log rotation, live-restore |
+| `docs/manual.md` | Dropbox, Chrome, JetBrains Toolbox, Claude Code |
+| `git/` | shared git config and global gitignore |
+| `guake/` | guake settings, as a dconf dump |
+| `ssh/` | ssh client config |
+| `zsh/zshrc.sh` | the zshrc |
+| `install.sh` | the installer |
+| `MIGRATION.md` | what to rescue from the old machine first |
 
-## ssh
+Files are symlinked, so editing the live config edits the repository. The one
+exception is `docker/daemon.json`, copied to `/etc/docker/` because a root
+process reads it.
 
-1. Create a symbolic link.
+## If you fork this
 
-```zsh
-ln -s /path/to/dotfiles/ssh/config ~/.ssh/config
- ```
+- `git/gitconfig` points `core.excludesFile` at
+  `~/Projects/devtia/dotfiles/git/gitignore`. Clone elsewhere and you have to fix
+  that line.
+- `guake/guake.dconf` and `zsh/zshrc.sh` expect PhpStorm from JetBrains Toolbox.
+- Everything machine-specific goes in `~/.zshrc.local`, sourced last.
 
-# Contact
+## Not managed here, on purpose
 
-You can contact me on twitter [@desarrolla2](https://twitter.com/desarrolla2)
+PhpStorm settings and Chrome (they sync through their own accounts), the git
+identity and any address (this repository is public), PHP and Composer versions
+(per project, in Docker), and the starship config (default preset, no
+`starship.toml`).
+
+## Licence
+
+MIT. See [LICENSE](LICENSE).
