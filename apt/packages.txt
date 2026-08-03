@@ -1,0 +1,81 @@
+# Every package this setup installs from the Ubuntu archive.
+#
+# One package per line, each with the reason it is here. The reason is the
+# point of the file: it is the only place where "I stopped using this" becomes
+# visible. tmux, bin/sf and phpstorm/WebIde70 survived a decade in this
+# repository because nothing ever forced that question. Read the comments when
+# rebuilding a machine and delete the lines that no longer describe the work.
+#
+# Install everything in one go. `sed` strips both whole-line and trailing
+# comments, so the remaining words are exactly the package names:
+#
+#   sed 's/#.*//' apt/packages.txt | xargs -r sudo apt-get install -y
+#
+# Verified against Ubuntu 26.04 (resolute) on 2026-08-01: every line below
+# resolves to a candidate in the Ubuntu archive. Check a line with
+# `apt-cache policy <package>`; a package with no candidate is rot and should
+# be removed or replaced rather than carried forward.
+#
+# DELIBERATELY NOT HERE
+#
+# Anything that does not come from the Ubuntu archive, because a single
+# unconditional `apt-get install` cannot express "add this third-party
+# repository first" or "download this tarball":
+#
+#   docker-ce, docker-ce-cli, containerd.io, docker-buildx-plugin,
+#   docker-compose-plugin   apt packages, but from download.docker.com, which
+#                           has to be added as a repository first. The Ubuntu
+#                           docker.io package is not a substitute: it lags and
+#                           ships no compose v2 plugin. INSTALL.md step 7.
+#   google-chrome-stable    apt package from Google's own repository, added by
+#                           the .deb from google.com. INSTALL.md step 9.
+#   dropbox                 apt package from linux.dropbox.com, added by the
+#                           .deb from dropbox.com. INSTALL.md step 8.
+#   claude-desktop          apt package from downloads.claude.ai, added by its
+#                           own .deb. INSTALL.md step 10.
+#   JetBrains Toolbox       tarball from jetbrains.com, unpacked into
+#                           ~/.local/share/JetBrains. PhpStorm is installed
+#                           through it, never through apt. INSTALL.md step 9.
+#   oh-my-zsh and its       install script and git clones from GitHub.
+#   two external plugins    INSTALL.md step 2.
+#   JetBrainsMono Nerd Font zip from the nerd-fonts GitHub releases, unpacked
+#                           into ~/.local/share/fonts. INSTALL.md step 3.
+#   composer                a single phar downloaded from getcomposer.org into
+#                           ~/.local/bin. The apt package lags upstream and
+#                           cannot self-update. See docs/manual.md.
+
+
+# --------------------------------------------------------------------- base --
+
+git                 # clones this repository and every project in ~/Projects; the whole setup is git-driven
+curl                # fetches the oh-my-zsh installer, the Nerd Font zip and Docker's signing key
+ca-certificates     # the root store those HTTPS downloads validate against, and what Docker's apt repo needs
+
+# -------------------------------------------------------------------- shell --
+
+zsh                 # the login shell, set with usermod; oh-my-zsh and zsh/zshrc.sh sit on top of it
+fzf                 # fuzzy history search bound by the oh-my-zsh fzf plugin, which zshrc.sh only loads when this is present
+
+# ------------------------------------------------------------- prompt, font --
+
+starship            # the prompt, default preset; zshrc.sh evals it and falls back to a plain prompt when missing
+unzip               # unpacks the JetBrainsMono Nerd Font zip, the only thing that needs it
+
+# ----------------------------------------------------------------- terminal --
+
+guake               # the drop-down terminal opened with F12, the terminal actually used all day
+
+dconf-cli           # provides /usr/bin/dconf, which loads and dumps guake/guake.dconf; guake itself does not depend on it, it only arrives on a desktop install as a gdm3 dependency, so it is listed here rather than assumed
+
+# --------------------------------------------------------------- php on host --
+
+# Every project's PHP runs in Docker with its own pinned version. These are the
+# host copy, for the times it is quicker to run something outside a container:
+# a throwaway script, `composer validate`, a one-off CLI tool. Nothing depends
+# on this version matching any project.
+php-cli             # the interpreter itself; pulls php8.5-cli and php8.5-readline
+php-mbstring        # required by Composer, and by Symfony's string handling
+php-xml             # required by Composer to read package metadata
+php-curl            # required by Composer to talk to packagist over HTTPS
+php-zip             # required by Composer to unpack distribution archives
+php-intl            # Symfony validators and formatters need it; failures here are cryptic
