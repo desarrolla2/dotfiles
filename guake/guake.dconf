@@ -1,0 +1,15 @@
+[general]
+copy-on-select=true
+default-shell='/usr/bin/zsh'
+history-size=100000
+prompt-on-close-tab=2
+quick-open-command-line='__HOME__/.local/share/JetBrains/Toolbox/scripts/phpstorm --line %(line_number)s %(file_path)s'
+quick-open-enable=true
+start-at-login=true
+use-default-font=false
+use-trayicon=false
+window-height=70
+window-losefocus=true
+
+[style/font]
+style='JetBrainsMono Nerd Font 11'
