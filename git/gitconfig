@@ -1,0 +1,61 @@
+# Global git configuration.
+#
+# This file is NOT symlinked to ~/.gitconfig. `git config --global` writes to
+# ~/.gitconfig, and those writes must never land inside a public repository.
+# Instead ~/.gitconfig includes this file, so the repository stays read-only
+# from git's point of view.
+#
+# The include sits at the top of ~/.gitconfig on purpose: git applies keys in
+# read order and the last one wins, so anything written locally below the
+# include overrides the values defined here.
+#
+# Identity is deliberately absent. This repository is public, so the name,
+# the email addresses and the per-directory conditional includes that select
+# them live in ~/.gitconfig and its sibling files, which are per machine and
+# never versioned. See INSTALL.md for how to set them up.
+
+[core]
+	excludesFile = ~/Projects/devtia/dotfiles/git/gitignore
+	# Docker bind mounts and Dropbox report spurious permission changes.
+	# This only ignores mode changes on already-tracked files; newly added
+	# files still record their real mode.
+	fileMode = false
+
+[init]
+	defaultBranch = main               # new repos start on main, not master
+
+[pull]
+	rebase = true                      # replay local commits instead of merge commits
+
+[push]
+	default = simple                   # push only the current branch, same name
+	autoSetupRemote = true             # first push of a new branch needs no --set-upstream
+
+[fetch]
+	prune = true                       # drop local refs for branches deleted upstream
+
+[diff]
+	algorithm = histogram              # cleaner hunks than the default myers
+	colorMoved = zebra                 # show moved blocks apart from real changes
+
+[merge]
+	conflictStyle = zdiff3             # conflict markers include the common ancestor
+
+[rerere]
+	enabled = true                     # remember conflict resolutions and reapply them
+
+[branch]
+	sort = -committerdate              # git branch lists most recently used first
+
+[column]
+	ui = auto                          # list output in columns when the terminal allows
+
+[log]
+	date = iso                         # unambiguous YYYY-MM-DD HH:MM:SS timestamps
+
+[alias]
+	st = status --short --branch
+	lg = log --graph --pretty=format:'%C(yellow)%h%Creset %C(green)%ad%Creset %s %C(blue)<%an>%Creset' --date=short
+	last = log -1 --stat
+	unstage = restore --staged
+	amend = commit --amend --no-edit

@@ -3,16 +3,17 @@
 *.swp
 *~
 .~lock*
-.php_cs.cache
+.php-cs-fixer.cache
 
-# Markdown personal shared files in the root directory
+# Personal notes synced from Dropbox
 /_*.md
+doc/_*
+
+# Claude Code project configuration symlinked from Dropbox
+/.claude
 
 # IDE configuration
 /.idea
-
-# Output temporal files
-/salida.*
 
 # Manual test files
 *Prueba*
