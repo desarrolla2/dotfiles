@@ -1,0 +1,9 @@
+# Guake's own global hotkey needs an X11 keyboard grab, which Wayland denies, so
+# GNOME owns the shortcut instead. Replaces the whole custom-keybindings list.
+[/]
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/guake/']
+
+[custom-keybindings/guake]
+name='Guake'
+command='guake -t'
+binding='F12'

@@ -227,6 +227,18 @@ step_guake() {
     printf '%s\n' "$expected" | dconf load /org/guake/
     say "restart guake for this to take effect"
   fi
+
+  local hotkey="$DOTFILES/guake/hotkey.dconf" media=/org/gnome/settings-daemon/plugins/media-keys/
+  [[ -f "$hotkey" ]] || { warn "$hotkey not found"; return 0; }
+
+  if [[ "$(dconf read "${media}custom-keybindings/guake/binding" 2>/dev/null)" == "'F12'" ]]; then
+    ok "F12 opens guake through GNOME"
+  elif ((DRY_RUN)); then
+    act "would load guake/hotkey.dconf (F12 is not bound to guake)"
+  else
+    act "loading guake/hotkey.dconf"
+    dconf load "$media" < "$hotkey"
+  fi
 }
 
 # ----------------------------------------------------------------------- git --
