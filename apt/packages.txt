@@ -51,6 +51,11 @@ git                 # clones this repository and every project in ~/Projects; th
 curl                # fetches the oh-my-zsh installer, the Nerd Font zip and Docker's signing key
 ca-certificates     # the root store those HTTPS downloads validate against, and what Docker's apt repo needs
 
+# -------------------------------------------------------------------- tools --
+
+vim                 # terminal editor for the edits PhpStorm is not open for; $EDITOR stays nano, see zsh/zshrc.sh
+htop                # interactive process and memory view, for finding which container is eating the machine
+
 # -------------------------------------------------------------------- shell --
 
 zsh                 # the login shell, set with usermod; oh-my-zsh and zsh/zshrc.sh sit on top of it
@@ -87,3 +92,19 @@ php-xml             # required by Composer to read package metadata
 php-curl            # required by Composer to talk to packagist over HTTPS
 php-zip             # required by Composer to unpack distribution archives
 php-intl            # Symfony validators and formatters need it; failures here are cryptic
+
+# ------------------------------------------------------------------ desktop --
+
+synaptic            # graphical apt frontend, for browsing and searching what is installed when the package name is unknown
+# Not the `libreoffice` metapackage: it adds Base, which drags in a Firebird
+# engine, HSQLDB and the SDBC drivers. Writer recommends a JRE and that is left
+# alone; refusing a Recommends means refusing it again on every upgrade.
+libreoffice-writer  # documents
+libreoffice-calc    # spreadsheets
+libreoffice-impress # slides; libreoffice-draw arrives with it, as a hard dependency
+
+krita               # drawing; its MyPaint brush engine, kritamypaintop, reads .myb
+mypaint-brushes     # the 373 .myb brushes that engine imports, the only part of mypaint worth keeping
+# Not mypaint itself: the archive's 2.0.1 reads GLib enums through the pre-3.52
+# PyGObject API, so it crashes at startup and again in the tablet code. Upstream
+# has released nothing since 2020.
