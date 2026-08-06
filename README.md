@@ -41,6 +41,7 @@ git identity, and the four apps that end in an account login.
 | `git/` | shared git config and global gitignore |
 | `guake/` | guake settings, as a dconf dump |
 | `ssh/` | ssh client config |
+| `starship/` | prompt config: the default preset, no language modules |
 | `zsh/zshrc.sh` | the zshrc |
 | `install.sh` | the installer |
 
@@ -59,9 +60,8 @@ process reads it.
 ## Not managed here, on purpose
 
 PhpStorm settings and Chrome (they sync through their own accounts), the git
-identity and any address (this repository is public), PHP and Composer versions
-(per project, in Docker), and the starship config (default preset, no
-`starship.toml`).
+identity and any address (this repository is public), and PHP and Composer
+versions (per project, in Docker).
 
 ## Licence
 

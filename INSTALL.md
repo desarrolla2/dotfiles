@@ -71,8 +71,9 @@ should be removed rather than carried forward.
   clones `zsh-autosuggestions` and `zsh-syntax-highlighting`, links
   `zsh/zshrc.sh` to `~/.zshrc`, sets `/usr/bin/zsh` as login shell. Takes effect
   in new terminals only.
-- **starship**: no `starship.toml`, the default preset is used as it ships. Also
-  installs JetBrainsMono Nerd Font (~124 MB) for the powerline glyphs.
+- **starship**: links `starship/starship.toml` to `~/.config/starship.toml`, the
+  default preset with the language modules turned off. Also installs
+  JetBrainsMono Nerd Font (~124 MB) for the powerline glyphs.
 - **guake**: loads `guake/guake.dconf`, with `__HOME__` replaced by the real home
   directory. **Restart guake afterwards.**
 

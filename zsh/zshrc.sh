@@ -75,9 +75,9 @@ export EDITOR="${EDITOR:-nano}"
 
 # ----------------------------------------------------------------- starship --
 
-# The prompt. Default preset, no starship.toml. Guarded so a machine where
-# starship is not installed yet still gets a usable shell instead of an error
-# on every terminal you open.
+# The prompt. Default preset, minus what starship/starship.toml turns off.
+# Guarded so a machine where starship is not installed yet still gets a usable
+# shell instead of an error on every terminal you open.
 (( $+commands[starship] )) && eval "$(starship init zsh)"
 
 

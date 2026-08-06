@@ -1,0 +1,13 @@
+# Starship prompt configuration.
+#
+# Symlinked to ~/.config/starship.toml. The default preset otherwise: this file
+# only turns modules off, so a starship upgrade still brings its own defaults.
+
+# The language modules report the host's version, and no project here runs
+# against the host: PHP and node live in each project's Docker image. node is not
+# even installed, so the module drew its icon with no version next to it.
+[nodejs]
+disabled = true
+
+[php]
+disabled = true

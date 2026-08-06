@@ -176,7 +176,8 @@ step_zsh() {
 
 step_starship() {
   apt_install starship unzip
-  say "no starship.toml on purpose, the default preset is used as it ships"
+
+  link "$DOTFILES/starship/starship.toml" "$HOME/.config/starship.toml"
 
   if compgen -G "$FONT_DIR/*.ttf" >/dev/null; then
     ok "JetBrainsMono Nerd Font installed"
