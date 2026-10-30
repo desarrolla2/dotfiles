@@ -12,16 +12,12 @@ ZSH_THEME=""
 # --------------------------------------------------------------------- path --
 
 # This has to come BEFORE the plugin block: that block probes for commands with
-# $commands[...], which only sees what is already on the PATH. With the two
-# blocks the other way round, composer installed in ~/.local/bin went unnoticed
-# and its plugin never loaded, except on machines where the parent process
-# happened to export that directory already.
+# $commands[...], which only sees what is already on the PATH.
 #
-# No relative entries. The previous PATH carried ./vendor/bin and
-# ./node_modules/.bin, which run binaries from any repository you cd into.
+# No relative entries: ./vendor/bin or ./node_modules/.bin would run binaries
+# from any repository you cd into.
 path=(
   "$HOME/.local/bin"
-  "$HOME/.config/composer/vendor/bin"
   "$HOME/.local/share/JetBrains/Toolbox/scripts"
   $path
 )
@@ -33,10 +29,7 @@ export PATH
 
 plugins=(git docker docker-compose extract sudo colored-man-pages)
 
-# Environments run in Docker, so composer may be missing from the host. Loading
-# it blindly leaves tab completion hanging.
-(( $+commands[composer] )) && plugins+=(composer)
-(( $+commands[fzf] ))      && plugins+=(fzf)
+(( $+commands[fzf] )) && plugins+=(fzf)
 
 # nvm costs ~500ms to load. Deferred, that is only paid when node/npm/nvm run.
 if [[ -d "$HOME/.nvm" ]]; then

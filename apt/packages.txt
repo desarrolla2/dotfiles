@@ -28,21 +28,18 @@
 #                           docker.io package is not a substitute: it lags and
 #                           ships no compose v2 plugin. INSTALL.md step 7.
 #   google-chrome-stable    apt package from Google's own repository, added by
-#                           the .deb from google.com. INSTALL.md step 9.
+#                           the .deb from google.com. INSTALL.md step 8.
 #   dropbox                 apt package from linux.dropbox.com, added by the
 #                           .deb from dropbox.com. INSTALL.md step 8.
 #   claude-desktop          apt package from downloads.claude.ai, added by its
-#                           own .deb. INSTALL.md step 10.
+#                           own .deb, installed by hand.
 #   JetBrains Toolbox       tarball from jetbrains.com, unpacked into
 #                           ~/.local/share/JetBrains. PhpStorm is installed
-#                           through it, never through apt. INSTALL.md step 9.
+#                           through it, never through apt. INSTALL.md step 8.
 #   oh-my-zsh and its       install script and git clones from GitHub.
-#   two external plugins    INSTALL.md step 2.
+#   two external plugins    INSTALL.md step 4.
 #   JetBrainsMono Nerd Font zip from the nerd-fonts GitHub releases, unpacked
-#                           into ~/.local/share/fonts. INSTALL.md step 3.
-#   composer                a single phar downloaded from getcomposer.org into
-#                           ~/.local/bin. The apt package lags upstream and
-#                           cannot self-update. See docs/manual.md.
+#                           into ~/.local/share/fonts. INSTALL.md step 4.
 
 
 # --------------------------------------------------------------------- base --
@@ -79,19 +76,6 @@ dconf-cli           # provides /usr/bin/dconf, which loads and dumps guake/guake
 # on a machine that is not one.
 xdg-utils           # provides xdg-mime, which registers bin/phpstorm-url-handler for the phpstorm:// scheme
 desktop-file-utils  # provides update-desktop-database, which the desktop file is not picked up without
-
-# --------------------------------------------------------------- php on host --
-
-# Every project's PHP runs in Docker with its own pinned version. These are the
-# host copy, for the times it is quicker to run something outside a container:
-# a throwaway script, `composer validate`, a one-off CLI tool. Nothing depends
-# on this version matching any project.
-php-cli             # the interpreter itself; pulls php8.5-cli and php8.5-readline
-php-mbstring        # required by Composer, and by Symfony's string handling
-php-xml             # required by Composer to read package metadata
-php-curl            # required by Composer to talk to packagist over HTTPS
-php-zip             # required by Composer to unpack distribution archives
-php-intl            # Symfony validators and formatters need it; failures here are cryptic
 
 # ------------------------------------------------------------------ desktop --
 
