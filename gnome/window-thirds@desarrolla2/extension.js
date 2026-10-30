@@ -1,6 +1,7 @@
-// Super+Ctrl+arrows place the focused window. Left and right take two thirds of
-// the screen against that edge and, pressed again on a window already there, one
-// third, then back. Up maximizes, down centres two thirds.
+// Super+Ctrl+arrows place the focused window. Left, right and down take two
+// thirds of the screen against that edge or centred and, pressed again on a
+// window already there, one third, then back. Up maximizes and, pressed again,
+// restores the window to where it was.
 import GLib from 'gi://GLib';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
@@ -14,30 +15,29 @@ const TOLERANCE = 0.02;
 // Keybinding names share one namespace with Mutter's own, which already has a
 // "maximize", hence the prefix.
 const ACTIONS = {
-  'thirds-left': window => tileAgainst(window, 'left'),
-  'thirds-right': window => tileAgainst(window, 'right'),
-  'thirds-maximize': window => setMaximized(window, true),
-  'thirds-center': window => center(window),
+  'thirds-left': window => cycle(window, 'left'),
+  'thirds-right': window => cycle(window, 'right'),
+  'thirds-maximize': window => setMaximized(window, !isMaximized(window)),
+  'thirds-center': window => cycle(window, 'center'),
 };
 
-function tileAgainst(window, side) {
+function cycle(window, side) {
   const area = window.get_work_area_current_monitor();
   const current = window.get_frame_rect();
   const twoThirds = Math.round(area.width * 2 / 3);
   const margin = area.width * TOLERANCE;
-  const gap = side === 'left'
-    ? current.x - area.x
-    : area.x + area.width - (current.x + current.width);
-  const atTwoThirds = Math.abs(gap) <= margin && Math.abs(current.width - twoThirds) <= margin;
+  const atTwoThirds = Math.abs(current.x - xFor(area, side, twoThirds)) <= margin &&
+    Math.abs(current.width - twoThirds) <= margin;
   const width = atTwoThirds ? area.width - twoThirds : twoThirds;
-  const x = side === 'left' ? area.x : area.x + area.width - width;
-  place(window, x, area.y, width, area.height);
+  place(window, xFor(area, side, width), area.y, width, area.height);
 }
 
-function center(window) {
-  const area = window.get_work_area_current_monitor();
-  const width = Math.round(area.width * 2 / 3);
-  place(window, area.x + Math.round((area.width - width) / 2), area.y, width, area.height);
+function xFor(area, side, width) {
+  switch (side) {
+    case 'left': return area.x;
+    case 'right': return area.x + area.width - width;
+    default: return area.x + Math.round((area.width - width) / 2);
+  }
 }
 
 // How long a client gets to settle on a new geometry, and how many times it is
@@ -102,6 +102,14 @@ function setMaximized(window, maximized) {
   } catch {
     window[method]();
   }
+}
+
+// Fully maximized only: a half-tiled window counts as maximized vertically.
+// is_maximized() replaces get_maximized() on newer Mutter.
+function isMaximized(window) {
+  if (typeof window.is_maximized === 'function')
+    return window.is_maximized();
+  return window.get_maximized() === Meta.MaximizeFlags.BOTH;
 }
 
 export default class WindowThirdsExtension extends Extension {

@@ -11,11 +11,11 @@
     </key>
     <key name="thirds-maximize" type="as">
       <default><![CDATA[['<Super><Control>Up']]]></default>
-      <summary>Maximized</summary>
+      <summary>Maximized; again, back to where it was</summary>
     </key>
     <key name="thirds-center" type="as">
       <default><![CDATA[['<Super><Control>Down']]]></default>
-      <summary>Two thirds, centred</summary>
+      <summary>Two thirds, centred; again, one third</summary>
     </key>
   </schema>
 </schemalist>

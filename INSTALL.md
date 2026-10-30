@@ -207,8 +207,8 @@ only when it starts.
 |---|---|
 | Super+Ctrl+← | two thirds on the left; pressed again, one third, and back |
 | Super+Ctrl+→ | the same on the right |
-| Super+Ctrl+↑ | maximized |
-| Super+Ctrl+↓ | two thirds, centred |
+| Super+Ctrl+↑ | maximized; pressed again, back to where it was |
+| Super+Ctrl+↓ | two thirds, centred; pressed again, one third, and back |
 
 Super+← and Super+→ stay GNOME's own halves. An extension rather than a
 `wmctrl` script because Wayland lets no other process move a window.
