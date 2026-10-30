@@ -16,13 +16,13 @@ Host *
   ServerAliveInterval 120
   ServerAliveCountMax 3
 
-  # Identities, in the order ssh should try them. Ed25519 is the current
-  # default: shorter keys, faster, and no key size to get wrong.
-  # The RSA key is the original 2048-bit one from 2014, kept only for hosts
-  # that have not been migrated to the new key yet. Remove it once the last
-  # of those is updated.
+  # Identities. Ed25519 is now the only key: shorter, faster, and no key size
+  # to get wrong. The original 2048-bit RSA key from 2014 was retired on 8
+  # September 2026, moved out of ~/.ssh to ~/.local/share/ssh-retired/ rather
+  # than deleted: known_hosts is hashed, so there was no way to tell which old
+  # hosts still had only that key authorised. If one turns up, put the file
+  # back and add its IdentityFile line again for that host alone.
   IdentityFile ~/.ssh/id_ed25519
-  IdentityFile ~/.ssh/id_rsa
 
   # Offer only the keys listed above, not everything the agent happens to hold.
   # Without this ssh presents every agent key in turn, and a server with a low
