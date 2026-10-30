@@ -16,7 +16,7 @@ DOTFILES="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 BACKUP_DIR="$HOME/.backup"
 
 # Order matters: later steps need packages installed by earlier ones.
-STEPS=(packages zsh starship guake git ssh docker claude handlers)
+STEPS=(packages zsh starship guake git ssh docker claude handlers gnome)
 
 OMZ_DIR="$HOME/.oh-my-zsh"
 OMZ_URL="https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh"
@@ -514,6 +514,46 @@ Exec=$handler %u"
       run xdg-mime default phpstorm-url-handler.desktop "x-scheme-handler/$scheme"
     fi
   done
+}
+
+# --------------------------------------------------------------------- gnome --
+
+# Links the window-thirds extension and enables it. GNOME Shell reads a new
+# extension only when it starts, so it works from the next login.
+step_gnome() {
+  local uuid="window-thirds@desarrolla2"
+  local src="$DOTFILES/gnome/$uuid"
+  local schema="$src/schemas/org.gnome.shell.extensions.window-thirds.gschema.xml"
+  local enabled
+
+  link "$src" "$HOME/.local/share/gnome-shell/extensions/$uuid"
+
+  if ! is_workstation; then skip "gnome extension: no GNOME session in CI"; return 0; fi
+  command -v glib-compile-schemas >/dev/null ||
+    { warn "glib-compile-schemas not installed, cannot build the extension's settings"; return 0; }
+
+  if [[ "$src/schemas/gschemas.compiled" -nt "$schema" ]]; then
+    ok "window-thirds settings compiled"
+  else
+    act "compiling the window-thirds settings"
+    run glib-compile-schemas "$src/schemas"
+  fi
+
+  if [[ "$(gsettings get org.gnome.shell disable-user-extensions 2>/dev/null)" == "true" ]]; then
+    warn "GNOME has user extensions turned off: gsettings set org.gnome.shell disable-user-extensions false"
+  fi
+
+  enabled="$(gsettings get org.gnome.shell enabled-extensions 2>/dev/null || true)"
+  if [[ "$enabled" == *"'$uuid'"* ]]; then
+    ok "$uuid enabled"
+  elif ((DRY_RUN)); then
+    act "would enable $uuid"
+  else
+    if [[ -z "$enabled" || "$enabled" == "@as []" ]]; then enabled="['$uuid']"
+    else enabled="${enabled%]}, '$uuid']"; fi
+    gsettings set org.gnome.shell enabled-extensions "$enabled"
+    act "enabled $uuid; log out and back in to load it"
+  fi
 }
 
 # ---------------------------------------------------------------------- main --

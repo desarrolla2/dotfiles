@@ -19,7 +19,7 @@ cd ~/Projects/devtia/dotfiles
 Steps run in this order and each one is idempotent:
 
 ```
-packages  zsh  starship  guake  git  ssh  docker  claude  handlers
+packages  zsh  starship  guake  git  ssh  docker  claude  handlers  gnome
 ```
 
 Run one on its own with `./install.sh --step docker`. Nothing is ever deleted:
@@ -39,6 +39,7 @@ git identity, and the four apps that end in an account login.
 | `docker/` | daemon config: log rotation, live-restore |
 | `docs/manual.md` | Dropbox, Chrome, JetBrains Toolbox, Claude Code |
 | `git/` | shared git config and global gitignore |
+| `gnome/` | a GNOME Shell extension: Super+Ctrl+arrows place windows in thirds |
 | `guake/` | guake settings, as a dconf dump |
 | `ssh/` | ssh client config |
 | `starship/` | prompt config: the default preset, no language modules |

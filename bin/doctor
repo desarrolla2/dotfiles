@@ -229,6 +229,25 @@ check_handlers() {
   else warn "the PhpStorm launcher" "$launcher absent; install PhpStorm from JetBrains Toolbox and enable its shell scripts"; fi
 }
 
+# An extension that fails to load leaves its keys doing nothing, without a word.
+check_gnome() {
+  local uuid="window-thirds@desarrolla2" state
+  [ -n "${CI:-}" ] && { skip "window-thirds extension" "CI, no GNOME session"; return; }
+
+  check_link "window-thirds is linked" "$HOME/.local/share/gnome-shell/extensions/$uuid" \
+    "$DOTFILES/gnome/$uuid" "./install.sh --step gnome"
+
+  if [ -f "$DOTFILES/gnome/$uuid/schemas/gschemas.compiled" ]; then pass "window-thirds settings compiled"
+  else fail "window-thirds settings compiled" "gschemas.compiled" "absent" "./install.sh --step gnome"; fi
+
+  state="$(gnome-extensions info "$uuid" 2>/dev/null | sed -n 's/^ *State: //p')"
+  case "$state" in
+    ACTIVE) pass "window-thirds is running" ;;
+    ERROR) fail "window-thirds is running" "ACTIVE" "ERROR" "journalctl --user -b -g window-thirds" ;;
+    *) warn "window-thirds is not running yet (${state:-unknown})" "./install.sh --step gnome, then log out and back in" ;;
+  esac
+}
+
 check_dangling() {
   local p broken=()
   for p in "$HOME/.zshrc" "$HOME/.ssh/config" "$HOME/.gitconfig" "$HOME/.claude"/*; do
@@ -248,6 +267,7 @@ section "ssh";      check_ssh
 section "docker";   check_docker
 section "claude";   check_claude
 section "handlers"; check_handlers
+section "gnome";    check_gnome
 section "symlinks"; check_dangling
 
 printf '\n%s\n' "== summary =="

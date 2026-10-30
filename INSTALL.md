@@ -193,7 +193,33 @@ A URL handler that fails does so silently, so this one logs every call to
 `~/.cache/phpstorm-url-handler.log` and raises a desktop notification on error.
 Check that file first when a click does nothing.
 
-## 10. Shared Dropbox symlinks
+## 10. Window shortcuts
+
+```sh
+./install.sh --step gnome
+```
+
+Links `gnome/window-thirds@desarrolla2` into GNOME Shell's extensions and
+enables it. **Log out and back in afterwards**: the shell reads a new extension
+only when it starts.
+
+| Keys | Focused window |
+|---|---|
+| Super+Ctrl+← | two thirds on the left; pressed again, one third, and back |
+| Super+Ctrl+→ | the same on the right |
+| Super+Ctrl+↑ | maximized |
+| Super+Ctrl+↓ | two thirds, centred |
+
+Super+← and Super+→ stay GNOME's own halves. An extension rather than a
+`wmctrl` script because Wayland lets no other process move a window.
+
+Check it:
+
+```sh
+gnome-extensions info window-thirds@desarrolla2    # State: ACTIVE
+```
+
+## 11. Shared Dropbox symlinks
 
 Per-project Claude config and notes are shared through Dropbox by the Dropbox
 `claude` project, which owns its own manifest. Not this repository's job. Needs
@@ -205,7 +231,7 @@ make symlink-simular    # dry run
 make symlink
 ```
 
-## 11. Verify
+## 12. Verify
 
 ```sh
 ./bin/doctor
@@ -216,4 +242,4 @@ fails. A `WARN` is not a failure — a missing `~/.zshrc.local` and a `docker`
 group not yet active in this session are both expected on a fresh machine.
 
 Three checks stay manual because doctor cannot make them: the package list
-(step 3), `ssh -T git@github.com` (step 6), and `make symlink-simular` (step 10).
+(step 3), `ssh -T git@github.com` (step 6), and `make symlink-simular` (step 11).

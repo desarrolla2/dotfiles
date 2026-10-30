@@ -32,7 +32,7 @@ graphical dialog.
 
 ## Layout
 
-One directory per tool: `apt/ bin/ claude/ docker/ docs/ git/ guake/ ssh/ zsh/`,
+One directory per tool: `apt/ bin/ claude/ docker/ docs/ git/ gnome/ guake/ ssh/ zsh/`,
 plus `install.sh` and `INSTALL.md`. See README.md.
 
 Files are symlinked, so editing the live config edits the repository. The one

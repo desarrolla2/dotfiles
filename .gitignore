@@ -11,6 +11,9 @@
 # ever added, stays tracked on purpose; only the local override is ignored.
 /.claude/settings.local.json
 
+# GNOME extension settings, compiled by install.sh from the schema beside them.
+/gnome/*/schemas/gschemas.compiled
+
 # Editor leftovers. These are also in the global excludes file, but that file
 # is not active until ~/.gitconfig is installed, which happens after this
 # repository is cloned. Repeating the two likeliest ones covers that gap.

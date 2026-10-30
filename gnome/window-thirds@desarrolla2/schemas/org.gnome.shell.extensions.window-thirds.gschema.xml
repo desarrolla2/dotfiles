@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.window-thirds" path="/org/gnome/shell/extensions/window-thirds/">
+    <key name="tile-left" type="as">
+      <default><![CDATA[['<Super><Control>Left']]]></default>
+      <summary>Two thirds on the left; again, one third</summary>
+    </key>
+    <key name="tile-right" type="as">
+      <default><![CDATA[['<Super><Control>Right']]]></default>
+      <summary>Two thirds on the right; again, one third</summary>
+    </key>
+    <key name="maximize" type="as">
+      <default><![CDATA[['<Super><Control>Up']]]></default>
+      <summary>Maximized</summary>
+    </key>
+    <key name="center" type="as">
+      <default><![CDATA[['<Super><Control>Down']]]></default>
+      <summary>Two thirds, centred</summary>
+    </key>
+  </schema>
+</schemalist>

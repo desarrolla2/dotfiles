@@ -1,0 +1,8 @@
+{
+  "uuid": "window-thirds@desarrolla2",
+  "name": "Window thirds",
+  "description": "Super+Ctrl+arrows: two thirds left or right (press again for one third), maximized, or two thirds centred.",
+  "shell-version": ["46", "47", "48", "49", "50"],
+  "settings-schema": "org.gnome.shell.extensions.window-thirds",
+  "url": "https://github.com/desarrolla2/dotfiles"
+}
