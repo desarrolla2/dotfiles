@@ -119,7 +119,20 @@ jobs:
           # pattern is what makes it match a tree, and this proves it still does.
           git init -q "$HOME/Projects/devtia/identity-probe"
 
+      - name: Put the checkout where README clones it
+        # git/gitconfig points core.excludesFile at that path.
+        run: ln -s "$GITHUB_WORKSPACE" "$HOME/Projects/devtia/dotfiles"
+
       - run: USER="${USER:-$(id -un)}" ./install.sh
+
+      - name: Lock down the completion directories the runner image leaves writable
+        # compinit refuses group- or world-writable directories in fpath and, with
+        # no terminal to ask, aborts. A desktop install has none: compaudit is
+        # empty there.
+        run: |
+          { zsh -c 'autoload -Uz compaudit; compaudit' || true; } | tee /dev/stderr |
+            xargs -r sudo chmod g-w,o-w
+
       - run: USER="${USER:-$(id -un)}" ./bin/doctor
 
   # Everything that rotted in this repository rotted out here, not in it: a URL
