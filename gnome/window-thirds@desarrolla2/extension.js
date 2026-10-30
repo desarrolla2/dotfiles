@@ -10,11 +10,13 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 // already placed within this share of the screen width.
 const TOLERANCE = 0.02;
 
+// Keybinding names share one namespace with Mutter's own, which already has a
+// "maximize", hence the prefix.
 const ACTIONS = {
-  'tile-left': window => tileAgainst(window, 'left'),
-  'tile-right': window => tileAgainst(window, 'right'),
-  'maximize': window => setMaximized(window, true),
-  'center': window => center(window),
+  'thirds-left': window => tileAgainst(window, 'left'),
+  'thirds-right': window => tileAgainst(window, 'right'),
+  'thirds-maximize': window => setMaximized(window, true),
+  'thirds-center': window => center(window),
 };
 
 function tileAgainst(window, side) {
@@ -37,9 +39,12 @@ function center(window) {
   place(window, area.x + Math.round((area.width - width) / 2), area.y, width, area.height);
 }
 
-// A maximized or half-tiled window ignores a new geometry until it leaves that state.
+// A maximized or half-tiled window ignores a new geometry until it leaves that
+// state. move_resize_frame() alone resizes without moving on X11, so the window
+// is moved first.
 function place(window, x, y, width, height) {
   setMaximized(window, false);
+  window.move_frame(true, x, y);
   window.move_resize_frame(true, x, y, width, height);
 }
 
