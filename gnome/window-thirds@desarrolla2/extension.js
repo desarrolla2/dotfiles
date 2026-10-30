@@ -1,6 +1,7 @@
 // Super+Ctrl+arrows place the focused window. Left and right take two thirds of
 // the screen against that edge and, pressed again on a window already there, one
 // third, then back. Up maximizes, down centres two thirds.
+import GLib from 'gi://GLib';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
@@ -39,13 +40,57 @@ function center(window) {
   place(window, area.x + Math.round((area.width - width) / 2), area.y, width, area.height);
 }
 
-// A maximized or half-tiled window ignores a new geometry until it leaves that
-// state. move_resize_frame() alone resizes without moving on X11, so the window
-// is moved first.
+// How long a client gets to settle on a new geometry, and how many times it is
+// set before giving up.
+const SETTLE_MS = 150;
+const ATTEMPTS = 3;
+
+let pendingPlacement = 0;
+
+// A maximized or half-tiled window leaves that state on the next main-loop turn,
+// overwriting any geometry set before, so the geometry waits for that turn. Some
+// clients, PhpStorm's Java runtime among them, then answer with their old size,
+// so it is checked after a moment and set again until it holds.
+// move_resize_frame() alone resizes without moving on X11: the move comes first.
 function place(window, x, y, width, height) {
   setMaximized(window, false);
-  window.move_frame(true, x, y);
-  window.move_resize_frame(true, x, y, width, height);
+  cancelPlacement();
+
+  const margin = window.get_work_area_current_monitor().width * TOLERANCE;
+  let attempt = 0;
+  const apply = () => {
+    pendingPlacement = 0;
+    if (!window.get_compositor_private())
+      return GLib.SOURCE_REMOVE;
+
+    const r = window.get_frame_rect();
+    const holds = Math.abs(r.x - x) <= margin && Math.abs(r.width - width) <= margin;
+    if ((attempt > 0 && holds) || attempt >= ATTEMPTS)
+      return GLib.SOURCE_REMOVE;
+
+    attempt++;
+    window.move_frame(true, x, y);
+    window.move_resize_frame(true, x, y, width, height);
+    pendingPlacement = GLib.timeout_add(GLib.PRIORITY_DEFAULT, SETTLE_MS, apply);
+    return GLib.SOURCE_REMOVE;
+  };
+  pendingPlacement = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, apply);
+}
+
+// focus_window is sometimes empty with a window plainly in front, so the most
+// recently used window of the workspace stands in for it.
+function targetWindow() {
+  const focused = global.display.focus_window;
+  if (focused)
+    return focused;
+  const workspace = global.workspace_manager.get_active_workspace();
+  return global.display.get_tab_list(Meta.TabList.NORMAL, workspace)[0] ?? null;
+}
+
+function cancelPlacement() {
+  if (pendingPlacement)
+    GLib.source_remove(pendingPlacement);
+  pendingPlacement = 0;
 }
 
 // maximize() and unmaximize() take a flags argument on some Mutter versions and
@@ -64,14 +109,17 @@ export default class WindowThirdsExtension extends Extension {
     this._settings = this.getSettings();
     for (const [name, action] of Object.entries(ACTIONS)) {
       Main.wm.addKeybinding(name, this._settings, Meta.KeyBindingFlags.NONE, Shell.ActionMode.NORMAL, () => {
-        const window = global.display.focus_window;
-        if (window && !window.is_fullscreen() && window.allows_resize())
+        const window = targetWindow();
+        // Not allows_resize(): it is false for any maximized window, which is
+        // exactly the one most often placed from here.
+        if (window && window.get_window_type() === Meta.WindowType.NORMAL && !window.is_fullscreen())
           action(window);
       });
     }
   }
 
   disable() {
+    cancelPlacement();
     for (const name of Object.keys(ACTIONS))
       Main.wm.removeKeybinding(name);
     this._settings = null;
