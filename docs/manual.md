@@ -44,10 +44,9 @@ Do the four in the order given. The ordering is not cosmetic:
 3. **JetBrains Toolbox / PhpStorm third**, because it needs a browser and
    because `zsh/zshrc.sh` and `guake/guake.dconf` both reference paths it
    creates. Install it before you judge whether those configs are working.
-4. **Claude Code last**, because it is the only one that reads the repository:
-   its configuration is symlinked out of `claude/` by `install.sh`, so the
-   repository has to be cloned and installed first, and it is the most useful
-   thing to have working when something in the earlier steps needs fixing.
+4. **Claude Code last**, because its configuration arrives through Dropbox, so
+   the sync has to be done first, and it is the most useful thing to have
+   working when something in the earlier steps needs fixing.
 
 ---
 
@@ -424,14 +423,9 @@ else. `CLAUDE.md` lists it under Environment as "used daily".
 
 ### What comes from this repository, and what does not
 
-The global configuration **is** in this repository. `install.sh` has a
-`claude` step, last in `DEFAULT_STEPS`, which symlinks the contents of
-`claude/` into `~/.claude/` file by file, without ever replacing `~/.claude`
-itself:
-
-- `claude/settings.json`
-- `claude/statusline-command.sh`
-- `claude/keybindings.json`
+The global configuration is **not** in this repository. It describes private
+work, so it lives in Dropbox and is linked into `~/.claude/` file by file by the
+Dropbox `claude` project, never replacing `~/.claude` itself.
 
 Authentication does **not** come from this repository, and must not. It is
 per-machine and interactive: you run `claude`, it opens a browser, you approve.
@@ -442,11 +436,7 @@ it.** It is a live credential for the Anthropic account. Each machine
 authenticates itself, once, by hand. The same goes for everything else in
 `~/.claude/` that is state rather than configuration —
 `settings.local.json`, `history.jsonl`, `projects/`, `sessions/`,
-`.credentials.json`. Only the three files above are tracked.
-
-Because `install.sh` does the linking, the repository has to be cloned and
-installed before this step is finished. That is the other half of why Claude
-Code is last.
+`.credentials.json`.
 
 ### How it is actually installed here
 
@@ -522,8 +512,6 @@ Verify that fingerprint before trusting the key.
    Console account is required; the free plan does not include Claude Code.
 3. Re-authenticate any MCP servers that need their own OAuth. Those are also
    per-machine.
-4. Run `install.sh --step claude` if it has not run since `claude/` was
-   populated, so the three configuration files are linked in.
 
 ### Check it
 

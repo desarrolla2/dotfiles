@@ -162,9 +162,9 @@ See [docs/manual.md](docs/manual.md) for each procedure. Order matters:
 2. **Chrome** — before JetBrains, because the next two logins open a browser.
 3. **JetBrains Toolbox**, then PhpStorm from it. `zsh/zshrc.sh` and
    `guake/guake.dconf` both reference the launcher path it creates.
-4. **Claude Code** — last, it is the only one that reads this repository.
-   `./install.sh --step claude` links the config into `~/.claude`. Never copy
-   `~/.claude/.credentials.json` between machines: it is a live OAuth token.
+4. **Claude Code** — last. Its configuration is not in this repository: it
+   arrives through Dropbox (step 11). Never copy `~/.claude/.credentials.json`
+   between machines: it is a live OAuth token.
 
 ## 9. phpstorm:// links
 

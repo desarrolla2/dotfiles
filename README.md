@@ -1,6 +1,6 @@
 # dotfiles
 
-My Ubuntu configuration: zsh, starship, guake, git, ssh, docker and Claude Code.
+My Ubuntu configuration: zsh, starship, guake, git, ssh, docker and GNOME.
 Clone it on a freshly formatted machine, run the installer, and the machine is
 back to work.
 
@@ -19,7 +19,7 @@ cd ~/Projects/devtia/dotfiles
 Steps run in this order and each one is idempotent:
 
 ```
-packages  zsh  starship  guake  git  ssh  docker  claude  handlers  gnome
+packages  zsh  starship  guake  git  ssh  docker  handlers  gnome
 ```
 
 Run one on its own with `./install.sh --step docker`. Nothing is ever deleted:
@@ -35,7 +35,6 @@ git identity, and the four apps that end in an account login.
 | `apt/packages.txt` | every apt package, with the reason for each |
 | `bin/doctor` | checks the machine matches the docs |
 | `bin/phpstorm-url-handler` | opens `phpstorm://file&line` links at that line |
-| `claude/` | Claude Code global config |
 | `docker/` | daemon config: log rotation, live-restore |
 | `docs/manual.md` | Dropbox, Chrome, JetBrains Toolbox, Claude Code |
 | `git/` | shared git config and global gitignore |
@@ -60,9 +59,10 @@ process reads it.
 
 ## Not managed here, on purpose
 
-PhpStorm settings and Chrome (they sync through their own accounts), the git
-identity and any address (this repository is public), and PHP and Composer
-versions (per project, in Docker).
+PhpStorm settings and Chrome (they sync through their own accounts), the Claude
+Code configuration (it syncs through Dropbox, and it describes private work),
+the git identity and any address (this repository is public), and PHP and
+Composer versions (per project, in Docker).
 
 ## Licence
 

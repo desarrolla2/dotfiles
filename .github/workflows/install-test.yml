@@ -226,7 +226,7 @@ jobs:
         # zsh/ is excluded because shellcheck cannot parse zsh. SC1091 is sourcing
         # a file that only exists on the real machine; SC2088 fires on the literal
         # tilde in messages printed for a human, sixteen times, all wrong.
-        run: shellcheck -x -e SC1091,SC2088 install.sh bin/doctor claude/statusline-command.sh
+        run: shellcheck -x -e SC1091,SC2088 install.sh bin/doctor
 
       - name: zsh syntax
         run: zsh -n zsh/zshrc.sh

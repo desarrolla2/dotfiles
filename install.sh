@@ -16,7 +16,7 @@ DOTFILES="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 BACKUP_DIR="$HOME/.backup"
 
 # Order matters: later steps need packages installed by earlier ones.
-STEPS=(packages zsh starship guake git ssh docker claude handlers gnome)
+STEPS=(packages zsh starship guake git ssh docker handlers gnome)
 
 OMZ_DIR="$HOME/.oh-my-zsh"
 OMZ_URL="https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh"
@@ -427,34 +427,6 @@ Signed-By: $DOCKER_KEYRING"
   fi
   say "log limits apply to new containers; recreate existing ones with"
   say "'docker compose up -d --force-recreate'"
-}
-
-# -------------------------------------------------------------------- claude --
-
-step_claude() {
-  local src="$DOTFILES/claude" dst="$HOME/.claude" files=() rel file
-
-  [[ -d "$src" ]] || { say "no claude/ directory, nothing to link"; return 0; }
-
-  # Linked file by file. ~/.claude itself is never replaced by a link: it also
-  # holds credentials and session state, which stay local.
-  mapfile -t files < <(cd -- "$src" && find . -type f -printf '%P\n' | sort)
-  ((${#files[@]})) || { say "claude/ is empty"; return 0; }
-
-  if [[ ! -d "$dst" ]]; then
-    act "creating $dst"
-    ((DRY_RUN)) || mkdir -p -- "$dst"
-  fi
-
-  for rel in "${files[@]}"; do
-    file="$src/$rel"
-    # core.fileMode is false, so a script can arrive non-executable.
-    if [[ "$rel" == *.sh && ! -x "$file" ]]; then
-      act "chmod +x claude/$rel"
-      run chmod +x "$file"
-    fi
-    link "$file" "$dst/$rel"
-  done
 }
 
 # ------------------------------------------------------------------ handlers --

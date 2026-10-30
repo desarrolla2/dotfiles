@@ -186,16 +186,6 @@ check_docker() {
     "sudo systemctl restart docker so /etc/docker/daemon.json is picked up"; fi
 }
 
-check_claude() {
-  local src="$DOTFILES/claude" f
-  [ -d "$src" ] || { warn "claude/ linked into ~/.claude" "$src does not exist in the repository yet"; return; }
-  [ -d "$HOME/.claude" ] || { warn "claude/ linked into ~/.claude" "~/.claude does not exist yet"; return; }
-  for f in "$src"/*; do
-    check_link "~/.claude/$(basename "$f")" "$HOME/.claude/$(basename "$f")" "$f" \
-      "ln -sfn $f ~/.claude/$(basename "$f")"
-  done
-}
-
 # A URL handler fails silently by design: the browser hands the link over and
 # nothing happens. These four checks are the only warning you get.
 check_handlers() {
@@ -250,7 +240,7 @@ check_gnome() {
 
 check_dangling() {
   local p broken=()
-  for p in "$HOME/.zshrc" "$HOME/.ssh/config" "$HOME/.gitconfig" "$HOME/.claude"/*; do
+  for p in "$HOME/.zshrc" "$HOME/.ssh/config" "$HOME/.gitconfig"; do
     [ -L "$p" ] && [ ! -e "$p" ] && broken+=("$p -> $(readlink "$p")")
   done
   if [ ${#broken[@]} -eq 0 ]; then pass "no dangling symlinks among the installed files"
@@ -265,7 +255,6 @@ section "guake";    check_guake
 section "git";      check_git_config; check_git_identities
 section "ssh";      check_ssh
 section "docker";   check_docker
-section "claude";   check_claude
 section "handlers"; check_handlers
 section "gnome";    check_gnome
 section "symlinks"; check_dangling
