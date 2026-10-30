@@ -67,7 +67,7 @@ check_zsh() {
   for p in "${ZSH_PLUGINS[@]}"; do [[ "$loaded" == *" $p "* ]] || missing+=("$p"); done
   check "oh-my-zsh plugins load" "${ZSH_PLUGINS[*]}" \
     "${missing+missing: ${missing[*]}}${missing+ }${missing-${ZSH_PLUGINS[*]}}" \
-    "install the missing plugin under ~/.oh-my-zsh/custom/plugins, see INSTALL.md step 2"
+    "install the missing plugin under ~/.oh-my-zsh/custom/plugins, see INSTALL.md step 4"
   if [ -f "$HOME/.zshrc.local" ]; then pass "~/.zshrc.local present (machine-local overrides)"
   else warn "~/.zshrc.local absent" "optional by design, only needed for machine-local settings"; fi
 }
@@ -89,7 +89,7 @@ check_font() {
   local n; n="$(fc-list 2>/dev/null | grep -c 'JetBrainsMono Nerd')"
   if [ "$n" -gt 0 ]; then pass "JetBrainsMono Nerd Font installed ($n faces)"
   else fail "JetBrainsMono Nerd Font installed" "at least one face" "none" \
-    "install it into ~/.local/share/fonts and run fc-cache -f, see INSTALL.md step 3"; fi
+    "install it into ~/.local/share/fonts and run fc-cache -f, see INSTALL.md step 4"; fi
 }
 
 # The repository dump stores __HOME__ where the live value has the real home.
