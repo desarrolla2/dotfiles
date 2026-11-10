@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#
+# tmux-open-link - open the link under a Ctrl+click in tmux.
+#
+# With the mouse on, tmux takes every click, Ctrl+click included, so Ghostty never
+# sees it and opens no link. tmux/tmux.conf binds Ctrl+click to this script with the
+# OSC 8 hyperlink under the mouse, the clicked line and the mouse column.
+#
+#   tmux-open-link x<hyperlink> x<line> <column>
+#
+# Each text argument carries a leading "x": tmux passes them shell-quoted, and an
+# empty one would otherwise vanish and shift the rest.
+#
+# Opens the hyperlink a program printed, or else the http(s) address in the line that
+# spans the column. Exits 1 when there is none, so tmux treats it as a plain click.
+
+link="${1#x}"
+if [ -z "$link" ]; then
+  link=$(LINE="${2#x}" COL="${3:-0}" python3 -I -c '
+import os, re
+line, col = os.environ["LINE"], int(os.environ["COL"] or 0)
+for m in re.finditer(r"https?://[^\s<>\"\x27`]+", line):
+    if m.start() <= col < m.end():
+        print(m.group(0).rstrip(".,;:)]}"))
+        break
+')
+fi
+
+[ -n "$link" ] || exit 1
+# Opened from tmux, the link has no activation token and its app stays behind: the
+# open-in-front GNOME extension brings it forward when it sees this marker fresh.
+touch "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/open-in-front"
+setsid -f xdg-open "$link" >/dev/null 2>&1

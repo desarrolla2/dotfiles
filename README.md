@@ -40,7 +40,8 @@ git identity, and the four apps that end in an account login.
 | `docs/manual.md` | Dropbox, Chrome, JetBrains Toolbox, Claude Code |
 | `ghostty/` | terminal config: every window opens in the tmux session `main` |
 | `git/` | shared git config and global gitignore |
-| `gnome/` | a GNOME Shell extension: Super+Ctrl+arrows place windows in thirds |
+| `bin/tmux-open-link` | opens the link under a Ctrl+click in tmux |
+| `gnome/` | GNOME Shell extensions: Super+Ctrl+arrows place windows in thirds; a link opened from tmux comes to the front |
 | `ssh/` | ssh client config |
 | `starship/` | prompt config: the default preset, no language modules |
 | `tmux/` | tmux config: mouse, long scrollback, true colour, windows from 1 |

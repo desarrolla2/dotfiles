@@ -238,21 +238,26 @@ check_handlers() {
 
 # An extension that fails to load leaves its keys doing nothing, without a word.
 check_gnome() {
-  local uuid="window-thirds@desarrolla2" state
-  [ -n "${CI:-}" ] && { skip "window-thirds extension" "CI, no GNOME session"; return; }
+  local uuid name state
+  [ -n "${CI:-}" ] && { skip "gnome extensions" "CI, no GNOME session"; return; }
 
-  check_link "window-thirds is linked" "$HOME/.local/share/gnome-shell/extensions/$uuid" \
-    "$DOTFILES/gnome/$uuid" "./install.sh --step gnome"
+  for uuid in window-thirds@desarrolla2 open-in-front@desarrolla2; do
+    name="${uuid%@*}"
+    check_link "$name is linked" "$HOME/.local/share/gnome-shell/extensions/$uuid" \
+      "$DOTFILES/gnome/$uuid" "./install.sh --step gnome"
 
-  if [ -f "$DOTFILES/gnome/$uuid/schemas/gschemas.compiled" ]; then pass "window-thirds settings compiled"
-  else fail "window-thirds settings compiled" "gschemas.compiled" "absent" "./install.sh --step gnome"; fi
+    if [ "$name" = window-thirds ]; then
+      if [ -f "$DOTFILES/gnome/$uuid/schemas/gschemas.compiled" ]; then pass "window-thirds settings compiled"
+      else fail "window-thirds settings compiled" "gschemas.compiled" "absent" "./install.sh --step gnome"; fi
+    fi
 
-  state="$(gnome-extensions info "$uuid" 2>/dev/null | sed -n 's/^ *State: //p')"
-  case "$state" in
-    ACTIVE) pass "window-thirds is running" ;;
-    ERROR) fail "window-thirds is running" "ACTIVE" "ERROR" "journalctl --user -b -g window-thirds" ;;
-    *) warn "window-thirds is not running yet (${state:-unknown})" "./install.sh --step gnome, then log out and back in" ;;
-  esac
+    state="$(gnome-extensions info "$uuid" 2>/dev/null | sed -n 's/^ *State: //p')"
+    case "$state" in
+      ACTIVE) pass "$name is running" ;;
+      ERROR) fail "$name is running" "ACTIVE" "ERROR" "journalctl --user -b -g $name" ;;
+      *) warn "$name is not running yet (${state:-unknown})" "./install.sh --step gnome, then log out and back in" ;;
+    esac
+  done
 
   case "$(gsettings get org.gnome.shell disabled-extensions 2>/dev/null)" in
     *"'tiling-assistant@ubuntu.com'"*) pass "Ubuntu's tiling assistant is disabled" ;;

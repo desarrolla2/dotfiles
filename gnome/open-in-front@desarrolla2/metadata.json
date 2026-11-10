@@ -1,0 +1,7 @@
+{
+  "uuid": "open-in-front@desarrolla2",
+  "name": "Open in front",
+  "description": "A link opened with Ctrl+click from tmux brings its window to the front instead of leaving it behind with a \"ready\" notice.",
+  "shell-version": ["46", "47", "48", "49", "50"],
+  "url": "https://github.com/desarrolla2/dotfiles"
+}

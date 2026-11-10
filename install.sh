@@ -518,18 +518,20 @@ Exec=$handler %u"
 
 # --------------------------------------------------------------------- gnome --
 
-# Links the window-thirds extension and enables it. GNOME Shell reads a new
-# extension only when it starts, so it works from the next login.
+# Links the extensions in gnome/ and enables them. GNOME Shell reads a new
+# extension only when it starts, so each works from the next login.
 step_gnome() {
-  local uuid="window-thirds@desarrolla2"
-  local src="$DOTFILES/gnome/$uuid"
+  local uuids=("window-thirds@desarrolla2" "open-in-front@desarrolla2")
+  local src="$DOTFILES/gnome/window-thirds@desarrolla2"
   local schema="$src/schemas/org.gnome.shell.extensions.window-thirds.gschema.xml"
   local tiling="tiling-assistant@ubuntu.com"
-  local enabled
+  local uuid enabled
 
-  link "$src" "$HOME/.local/share/gnome-shell/extensions/$uuid"
+  for uuid in "${uuids[@]}"; do
+    link "$DOTFILES/gnome/$uuid" "$HOME/.local/share/gnome-shell/extensions/$uuid"
+  done
 
-  if ! is_workstation; then skip "gnome extension: no GNOME session in CI"; return 0; fi
+  if ! is_workstation; then skip "gnome extensions: no GNOME session in CI"; return 0; fi
   command -v glib-compile-schemas >/dev/null ||
     { warn "glib-compile-schemas not installed, cannot build the extension's settings"; return 0; }
 
@@ -544,17 +546,19 @@ step_gnome() {
     warn "GNOME has user extensions turned off: gsettings set org.gnome.shell disable-user-extensions false"
   fi
 
-  enabled="$(gsettings get org.gnome.shell enabled-extensions 2>/dev/null || true)"
-  if [[ "$enabled" == *"'$uuid'"* ]]; then
-    ok "$uuid enabled"
-  elif ((DRY_RUN)); then
-    act "would enable $uuid"
-  else
-    if [[ -z "$enabled" || "$enabled" == "@as []" ]]; then enabled="['$uuid']"
-    else enabled="${enabled%]}, '$uuid']"; fi
-    gsettings set org.gnome.shell enabled-extensions "$enabled"
-    act "enabled $uuid; log out and back in to load it"
-  fi
+  for uuid in "${uuids[@]}"; do
+    enabled="$(gsettings get org.gnome.shell enabled-extensions 2>/dev/null || true)"
+    if [[ "$enabled" == *"'$uuid'"* ]]; then
+      ok "$uuid enabled"
+    elif ((DRY_RUN)); then
+      act "would enable $uuid"
+    else
+      if [[ -z "$enabled" || "$enabled" == "@as []" ]]; then enabled="['$uuid']"
+      else enabled="${enabled%]}, '$uuid']"; fi
+      gsettings set org.gnome.shell enabled-extensions "$enabled"
+      act "enabled $uuid; log out and back in to load it"
+    fi
+  done
 
   # Placing windows is window-thirds' job. Disabled, not removed: its package also carries the dock and the Ubuntu
   # session.

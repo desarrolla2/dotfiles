@@ -221,10 +221,19 @@ Disabled, not removed: its package also carries the dock and the Ubuntu session.
 Super+← and Super+→ stay GNOME's own halves. An extension rather than a
 `wmctrl` script because Wayland lets no other process move a window.
 
+The same step links and enables `gnome/open-in-front@desarrolla2`. Ctrl+click on
+a link inside tmux runs `bin/tmux-open-link` (tmux takes the click, so Ghostty
+never sees it), and the app it opens would stay behind a "ready" notice: tmux has
+no window to lend it the right to come forward. The script marks the moment it
+opens the link, and the extension brings forward the first window that asks for
+attention within five seconds of it. Any other request for attention keeps its
+notice.
+
 Check it:
 
 ```sh
 gnome-extensions info window-thirds@desarrolla2    # State: ACTIVE
+gnome-extensions info open-in-front@desarrolla2    # State: ACTIVE
 ```
 
 ## 11. Shared Dropbox symlinks
