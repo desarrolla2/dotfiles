@@ -84,6 +84,7 @@ desktop-file-utils  # provides update-desktop-database, which the desktop file i
 # ------------------------------------------------------------------ desktop --
 
 synaptic            # graphical apt frontend, for browsing and searching what is installed when the package name is unknown
+gnome-system-monitor # Ubuntu's System Monitor, the graphical view of processes, CPU, memory and disks; not on a minimal install
 # Not the `libreoffice` metapackage: it adds Base, which drags in a Firebird
 # engine, HSQLDB and the SDBC drivers. Writer recommends a JRE and that is left
 # alone; refusing a Recommends means refusing it again on every upgrade.
