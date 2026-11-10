@@ -1,6 +1,7 @@
 # dotfiles
 
-My Ubuntu configuration: zsh, starship, guake, git, ssh, docker and GNOME.
+My Ubuntu configuration: zsh, starship, tmux, ghostty, git, ssh, docker and
+GNOME.
 Clone it on a freshly formatted machine, run the installer, and the machine is
 back to work.
 
@@ -19,7 +20,7 @@ cd ~/Projects/devtia/dotfiles
 Steps run in this order and each one is idempotent:
 
 ```
-packages  zsh  starship  guake  git  ssh  docker  handlers  gnome
+packages  uv  zsh  starship  tmux  ghostty  git  ssh  docker  handlers  gnome
 ```
 
 Run one on its own with `./install.sh --step docker`. Nothing is ever deleted:
@@ -37,11 +38,12 @@ git identity, and the four apps that end in an account login.
 | `bin/phpstorm-url-handler` | opens `phpstorm://file&line` links at that line |
 | `docker/` | daemon config: log rotation, live-restore |
 | `docs/manual.md` | Dropbox, Chrome, JetBrains Toolbox, Claude Code |
+| `ghostty/` | terminal config: every window opens in the tmux session `main` |
 | `git/` | shared git config and global gitignore |
 | `gnome/` | a GNOME Shell extension: Super+Ctrl+arrows place windows in thirds |
-| `guake/` | guake settings, as a dconf dump |
 | `ssh/` | ssh client config |
 | `starship/` | prompt config: the default preset, no language modules |
+| `tmux/` | tmux config: mouse, long scrollback, true colour, windows from 1 |
 | `zsh/zshrc.sh` | the zshrc |
 | `install.sh` | the installer |
 
@@ -54,7 +56,8 @@ process reads it.
 - `git/gitconfig` points `core.excludesFile` at
   `~/Projects/devtia/dotfiles/git/gitignore`. Clone elsewhere and you have to fix
   that line.
-- `guake/guake.dconf` and `zsh/zshrc.sh` expect PhpStorm from JetBrains Toolbox.
+- `zsh/zshrc.sh` and `bin/phpstorm-url-handler` expect PhpStorm from JetBrains
+  Toolbox.
 - Everything machine-specific goes in `~/.zshrc.local`, sourced last.
 
 ## Not managed here, on purpose

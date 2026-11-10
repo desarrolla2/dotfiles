@@ -9,7 +9,7 @@
 #
 # No `set -e` on purpose: every check must run so the report is complete.
 # Set CI to any non-empty value to skip the checks that cannot hold in a
-# container (login shell, fonts, guake's dconf database).
+# container (login shell, fonts).
 
 DOTFILES="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 ZSH_PLUGINS=(git docker docker-compose extract sudo colored-man-pages
@@ -92,26 +92,6 @@ check_font() {
     "install it into ~/.local/share/fonts and run fc-cache -f, see INSTALL.md step 4"; fi
 }
 
-# The repository dump stores __HOME__ where the live value has the real home.
-guake_expected() { # section key
-  # \%...% instead of /.../ for the address: section names such as style/font
-  # contain a slash, which would otherwise terminate the regex early.
-  sed -n "\%^\[$1\]%,/^$/p" "$DOTFILES/guake/guake.dconf" |
-    sed -n "s|^$2=||p" | sed "s|__HOME__|$HOME|g; s|^'||; s|'$||"
-}
-
-check_guake() {
-  [ -n "${CI:-}" ] && { skip "guake dconf settings" "CI, no dconf database"; return; }
-  local entry schema section key got
-  for entry in "general default-shell" "general window-height" "general history-size" \
-               "general quick-open-command-line" "style/font style"; do
-    section="${entry% *}"; key="${entry#* }"; schema="guake.${section//\//.}"
-    got="$(gsettings get "$schema" "$key" 2>&1 | sed "s|^'||; s|'$||")"
-    check "guake $section/$key" "$(guake_expected "$section" "$key")" "$got" \
-      "sed \"s|__HOME__|\$HOME|g\" $DOTFILES/guake/guake.dconf | dconf load /org/guake/ and restart guake"
-  done
-}
-
 # `git config --global --list` defaults to --no-includes, so the included file
 # is invisible without asking for it explicitly.
 check_git_config() {
@@ -168,6 +148,35 @@ check_ssh() {
   else warn "~/.ssh/id_ed25519 absent" "pending manual work: ssh-keygen -t ed25519 in a real terminal, then register it on GitHub"; fi
 }
 
+# By path, not PATH: bash only gets ~/.local/bin from ~/.profile, and doctor need not run in a login shell.
+check_uv() {
+  local uv="$HOME/.local/bin/uv"
+  if [ -x "$uv" ]; then pass "uv installed ($("$uv" --version))"
+  else fail "uv installed" "$uv" "not found" "./install.sh --step uv"; fi
+}
+
+check_tmux() {
+  if command -v tmux >/dev/null; then pass "tmux installed ($(tmux -V))"
+  else fail "tmux installed" "tmux on PATH" "not found" "./install.sh --step tmux"; fi
+  check_link "~/.tmux.conf is a symlink into the repository" "$HOME/.tmux.conf" "$DOTFILES/tmux/tmux.conf" \
+    "./install.sh --step tmux"
+}
+
+check_ghostty() {
+  check "ghostty installed from the archive" "install ok installed" \
+    "$(dpkg-query -W -f='${Status}' ghostty 2>/dev/null)" "./install.sh --step ghostty"
+  if command -v snap >/dev/null && snap list ghostty >/dev/null 2>&1; then
+    fail "no ghostty snap" "absent" "installed, a second launcher that draws on the CPU on NVIDIA" \
+      "pkexec snap remove ghostty"
+  fi
+  check_link "~/.config/ghostty/config is a symlink into the repository" "$HOME/.config/ghostty/config" \
+    "$DOTFILES/ghostty/config" "./install.sh --step ghostty"
+  local pid; pid="$(pgrep -o -x ghostty)" || return 0
+  check "running Ghostty draws on the GPU, not on the CPU" "0 llvmpipe threads" \
+    "$(cat /proc/"$pid"/task/*/comm 2>/dev/null | grep -c llvmpipe) llvmpipe threads" \
+    "close every Ghostty window and open it again from the dock"
+}
+
 check_docker() {
   check "docker daemon" active "$(systemctl is-active docker 2>&1)" "sudo systemctl start docker"
   if cmp -s "$DOTFILES/docker/daemon.json" /etc/docker/daemon.json; then
@@ -192,7 +201,7 @@ check_handlers() {
   local handler="$DOTFILES/bin/phpstorm-url-handler"
   local desktop="$HOME/.local/share/applications/phpstorm-url-handler.desktop"
   local launcher="$HOME/.local/share/JetBrains/Toolbox/scripts/phpstorm"
-  local scheme
+  local scheme vmoptions
 
   if [ -x "$handler" ]; then pass "bin/phpstorm-url-handler is executable"
   else fail "bin/phpstorm-url-handler is executable" "an executable file" \
@@ -217,6 +226,14 @@ check_handlers() {
   # one thing that turns a working registration into a click that does nothing.
   if [ -x "$launcher" ]; then pass "the PhpStorm launcher exists ($launcher)"
   else warn "the PhpStorm launcher" "$launcher absent; install PhpStorm from JetBrains Toolbox and enable its shell scripts"; fi
+
+  # Only on XWayland can wmctrl raise the IDE. Toolbox may drop the line on an IDE update.
+  vmoptions="$(printf '%s\n' "$HOME"/.config/JetBrains/PhpStorm*/phpstorm64.vmoptions | sort -V | tail -n1)"
+  if [ ! -f "$vmoptions" ]; then
+    warn "PhpStorm on XWayland" "no phpstorm64.vmoptions yet; start PhpStorm once, then ./install.sh --step handlers"
+  elif grep -qxF -- -Dawt.toolkit.name=XToolkit "$vmoptions"; then pass "PhpStorm on XWayland ($vmoptions)"
+  else fail "PhpStorm on XWayland" "-Dawt.toolkit.name=XToolkit in $vmoptions" "absent" \
+    "./install.sh --step handlers, then restart PhpStorm"; fi
 }
 
 # An extension that fails to load leaves its keys doing nothing, without a word.
@@ -236,11 +253,16 @@ check_gnome() {
     ERROR) fail "window-thirds is running" "ACTIVE" "ERROR" "journalctl --user -b -g window-thirds" ;;
     *) warn "window-thirds is not running yet (${state:-unknown})" "./install.sh --step gnome, then log out and back in" ;;
   esac
+
+  case "$(gsettings get org.gnome.shell disabled-extensions 2>/dev/null)" in
+    *"'tiling-assistant@ubuntu.com'"*) pass "Ubuntu's tiling assistant is disabled" ;;
+    *) fail "Ubuntu's tiling assistant is disabled" "in disabled-extensions" "enabled" "./install.sh --step gnome" ;;
+  esac
 }
 
 check_dangling() {
   local p broken=()
-  for p in "$HOME/.zshrc" "$HOME/.ssh/config" "$HOME/.gitconfig"; do
+  for p in "$HOME/.zshrc" "$HOME/.ssh/config" "$HOME/.gitconfig" "$HOME/.tmux.conf" "$HOME/.config/ghostty/config"; do
     [ -L "$p" ] && [ ! -e "$p" ] && broken+=("$p -> $(readlink "$p")")
   done
   if [ ${#broken[@]} -eq 0 ]; then pass "no dangling symlinks among the installed files"
@@ -251,7 +273,9 @@ check_dangling() {
 printf 'doctor: checking %s against %s\n' "$(hostname)" "$DOTFILES"
 section "shell";    check_login_shell; probe_zsh; check_zsh
 section "prompt";   check_starship; check_font
-section "guake";    check_guake
+section "uv";       check_uv
+section "tmux";     check_tmux
+section "ghostty";  check_ghostty
 section "git";      check_git_config; check_git_identities
 section "ssh";      check_ssh
 section "docker";   check_docker

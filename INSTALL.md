@@ -4,8 +4,7 @@ Fresh Ubuntu machine, in order. Every step is idempotent.
 
 Before wiping the old machine, rescue what this repository deliberately cannot
 rebuild: unpushed work, `~/.zshrc.local`, the git identity files, the ssh keys,
-the guake dconf dump (it exists only in dconf until someone exports it), and a
-finished Dropbox sync.
+and a finished Dropbox sync.
 
 `install.sh` is the source of truth for every automated command. This document
 only covers what a script cannot do.
@@ -54,17 +53,22 @@ line.
 ## 3. Base packages
 
 ```sh
-./install.sh --step packages
+./install.sh --step packages --step uv
 ```
 
 Reads `apt/packages.txt`, one package per line with the reason for each. Do not
 add `apt install` lines anywhere else; a package with no candidate is rot and
 should be removed rather than carried forward.
 
-## 4. zsh, starship, guake
+uv is the one tool not in the archive: its step runs Astral's installer into
+`~/.local/bin`, forced over the XDG directories it would otherwise prefer, and
+with `UV_NO_MODIFY_PATH=1`, because `zsh/zshrc.sh` owns the PATH. It updates
+itself with `uv self update`.
+
+## 4. zsh, starship, tmux, ghostty
 
 ```sh
-./install.sh --step zsh --step starship --step guake
+./install.sh --step zsh --step starship --step tmux --step ghostty
 ```
 
 - **zsh**: installs oh-my-zsh unattended (`RUNZSH=no CHSH=no KEEP_ZSHRC=yes`),
@@ -74,16 +78,14 @@ should be removed rather than carried forward.
 - **starship**: links `starship/starship.toml` to `~/.config/starship.toml`, the
   default preset with the language modules turned off. Also installs
   JetBrainsMono Nerd Font (~124 MB) for the powerline glyphs.
-- **guake**: loads `guake/guake.dconf`, with `__HOME__` replaced by the real home
-  directory. **Restart guake afterwards.**
+- **tmux**: links `tmux/tmux.conf` to `~/.tmux.conf`. A running server picks it
+  up with `tmux source-file ~/.tmux.conf`.
+- **ghostty**: installs the archive package and links `ghostty/config` to
+  `~/.config/ghostty/config`. Every new window opens in the tmux session
+  `main`. Not the snap: it draws with its bundled Mesa, which on an NVIDIA card
+  means the CPU.
 
 Machine-specific settings go in `~/.zshrc.local`, sourced last, never committed.
-
-To save guake changes back into the repository:
-
-```sh
-dconf dump /org/guake/ | sed "s|$HOME|__HOME__|g" > guake/guake.dconf
-```
 
 ## 5. git
 
@@ -161,7 +163,7 @@ See [docs/manual.md](docs/manual.md) for each procedure. Order matters:
    wizard.
 2. **Chrome** — before JetBrains, because the next two logins open a browser.
 3. **JetBrains Toolbox**, then PhpStorm from it. `zsh/zshrc.sh` and
-   `guake/guake.dconf` both reference the launcher path it creates.
+   `bin/phpstorm-url-handler` both reference the launcher path it creates.
 4. **Claude Code** — last. Its configuration is not in this repository: it
    arrives through Dropbox (step 11). Never copy `~/.claude/.credentials.json`
    between machines: it is a live OAuth token.
@@ -177,6 +179,11 @@ file and line in a stack trace, an Xdebug error page or a CI log opens at that
 line. Needs PhpStorm installed first (step 8), because the handler calls the
 launcher Toolbox creates.
 
+For the click to bring PhpStorm to the front, the IDE has to run on XWayland:
+the step adds `-Dawt.toolkit.name=XToolkit` to its custom VM options. **Restart
+PhpStorm afterwards.** Toolbox writes that file too and may drop the line on an
+update; doctor fails when it does.
+
 Test it:
 
 ```sh
@@ -186,8 +193,8 @@ gio open "phpstorm://open?url=file://$PWD/install.sh&line=35"
 Not upstream's `sanduhrs/phpstorm-url-handler`, which cannot work with a current
 PhpStorm: it runs `phpstorm --line N file`, and the launcher rejects `--line`
 unless a project directory comes first. The handler here finds that directory by
-walking up for `.idea`, then a git root. Upstream also finishes with `wmctrl`,
-which does nothing under Wayland.
+walking up for `.idea`, then a git root. Upstream also raises the window with
+`wmctrl`, but without the IDE on XWayland that does nothing under Wayland.
 
 A URL handler that fails does so silently, so this one logs every call to
 `~/.cache/phpstorm-url-handler.log` and raises a desktop notification on error.
@@ -201,7 +208,8 @@ Check that file first when a click does nothing.
 
 Links `gnome/window-thirds@desarrolla2` into GNOME Shell's extensions and
 enables it. **Log out and back in afterwards**: the shell reads a new extension
-only when it starts.
+only when it starts. It also disables Ubuntu's tiling assistant, at once.
+Disabled, not removed: its package also carries the dock and the Ubuntu session.
 
 | Keys | Focused window |
 |---|---|
@@ -226,7 +234,6 @@ Per-project Claude config and notes are shared through Dropbox by the Dropbox
 Dropbox to report `Up to date` and the project repositories to be cloned:
 
 ```sh
-sudo apt install make
 make symlink-simular    # dry run
 make symlink
 ```

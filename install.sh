@@ -16,7 +16,9 @@ DOTFILES="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 BACKUP_DIR="$HOME/.backup"
 
 # Order matters: later steps need packages installed by earlier ones.
-STEPS=(packages zsh starship guake git ssh docker handlers gnome)
+STEPS=(packages uv zsh starship tmux ghostty git ssh docker handlers gnome)
+
+UV_URL="https://astral.sh/uv/install.sh"
 
 OMZ_DIR="$HOME/.oh-my-zsh"
 OMZ_URL="https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh"
@@ -121,6 +123,29 @@ step_packages() {
   apt_install "${list[@]}"
 }
 
+# ------------------------------------------------------------------------ uv --
+
+# Python's package and project manager: `uv run` and `uvx` are how Python scripts get their dependencies without a
+# venv by hand. Not in the Ubuntu archive. Astral's installer puts it in ~/.local/bin, already on PATH through
+# zsh/zshrc.sh, and `uv self update` keeps it current.
+step_uv() {
+  local uv="$HOME/.local/bin/uv" installer
+
+  if [[ -x "$uv" ]]; then
+    ok "uv installed ($("$uv" --version))"
+  elif ((DRY_RUN)); then
+    act "would install uv into ~/.local/bin"
+  else
+    # The directory is forced because the installer otherwise prefers $XDG_BIN_HOME and $XDG_DATA_HOME/../bin, and
+    # zshrc.sh owns the PATH, so the installer must not append to the shell profiles.
+    act "installing uv"
+    installer="$(mktemp)"
+    curl -LsSf "$UV_URL" -o "$installer"
+    UV_INSTALL_DIR="$HOME/.local/bin" UV_NO_MODIFY_PATH=1 sh "$installer"
+    rm -f -- "$installer"
+  fi
+}
+
 # ----------------------------------------------------------------------- zsh --
 
 step_zsh() {
@@ -204,42 +229,19 @@ step_starship() {
   act "font cache rebuilt"
 }
 
-# --------------------------------------------------------------------- guake --
+# ---------------------------------------------------------------------- tmux --
 
-step_guake() {
-  apt_install guake
+step_tmux() {
+  apt_install tmux
+  link "$DOTFILES/tmux/tmux.conf" "$HOME/.tmux.conf"
+}
 
-  local dump="$DOTFILES/guake/guake.dconf" expected current
-  [[ -f "$dump" ]] || { warn "$dump not found"; return 0; }
+# ------------------------------------------------------------------- ghostty --
 
-  if ! is_workstation; then skip "guake dconf: no D-Bus session in CI"; return 0; fi
-  command -v dconf >/dev/null || { warn "dconf not installed, cannot restore guake"; return 0; }
-
-  # The dump stores __HOME__ so it works for any user.
-  expected="$(sed "s|__HOME__|$HOME|g" "$dump")"
-  current="$(dconf dump /org/guake/ 2>/dev/null || true)"
-
-  if [[ "$current" == "$expected" ]]; then
-    ok "guake configuration matches guake/guake.dconf"
-  elif ((DRY_RUN)); then
-    act "would load guake/guake.dconf (the live configuration differs)"
-  else
-    act "loading guake/guake.dconf"
-    printf '%s\n' "$expected" | dconf load /org/guake/
-    say "restart guake for this to take effect"
-  fi
-
-  local hotkey="$DOTFILES/guake/hotkey.dconf" media=/org/gnome/settings-daemon/plugins/media-keys/
-  [[ -f "$hotkey" ]] || { warn "$hotkey not found"; return 0; }
-
-  if [[ "$(dconf read "${media}custom-keybindings/guake/binding" 2>/dev/null)" == "'F12'" ]]; then
-    ok "F12 opens guake through GNOME"
-  elif ((DRY_RUN)); then
-    act "would load guake/hotkey.dconf (F12 is not bound to guake)"
-  else
-    act "loading guake/hotkey.dconf"
-    dconf load "$media" < "$hotkey"
-  fi
+# The archive package, not the snap: the snap draws with its bundled Mesa, which on an NVIDIA card means the CPU.
+step_ghostty() {
+  apt_install ghostty
+  link "$DOTFILES/ghostty/config" "$HOME/.config/ghostty/config"
 }
 
 # ----------------------------------------------------------------------- git --
@@ -437,13 +439,33 @@ step_handlers() {
   local handler="$DOTFILES/bin/phpstorm-url-handler"
   local apps="$HOME/.local/share/applications"
   local desktop="$apps/phpstorm-url-handler.desktop"
-  local scheme expected current
+  local scheme expected current vmoptions
+  local xtoolkit="-Dawt.toolkit.name=XToolkit"
 
   [[ -f "$handler" ]] || { warn "$handler not found, nothing to register"; return 0; }
 
   if [[ ! -x "$handler" ]]; then
     act "chmod +x bin/phpstorm-url-handler"
     run chmod +x "$handler"
+  fi
+
+  # The handler needs it to raise the IDE window; see the comment there for why
+  # nothing else can do it.
+  apt_install wmctrl
+
+  # wmctrl reaches the IDE only on XWayland. Toolbox writes this file too, and
+  # may drop the line on an IDE update; doctor fails when it does.
+  vmoptions="$(printf '%s\n' "$HOME"/.config/JetBrains/PhpStorm*/phpstorm64.vmoptions | sort -V | tail -n1)"
+  if [[ ! -f "$vmoptions" ]]; then
+    skip "PhpStorm on XWayland: no phpstorm64.vmoptions yet, start PhpStorm once and re-run"
+  elif grep -qxF -- "$xtoolkit" "$vmoptions"; then
+    ok "PhpStorm on XWayland ($vmoptions)"
+  elif ((DRY_RUN)); then
+    act "would add $xtoolkit to $vmoptions"
+  else
+    [[ -z "$(tail -c1 "$vmoptions")" ]] || printf '\n' >>"$vmoptions"
+    printf '%s\n' "$xtoolkit" >>"$vmoptions"
+    act "added $xtoolkit to $vmoptions; restart PhpStorm to pick it up"
   fi
 
   for scheme in xdg-mime update-desktop-database; do
@@ -454,6 +476,11 @@ step_handlers() {
   # Generated rather than tracked: Exec has to be an absolute path, because the
   # desktop session's PATH has neither ~/.local/bin nor the Toolbox scripts
   # directory, and a desktop file expands neither ~ nor $HOME.
+  #
+  # StartupNotify makes the browser ask the compositor for an activation token
+  # and pass it down in XDG_ACTIVATION_TOKEN. Without it, under Wayland the
+  # already-running IDE is denied the focus request: the file does open, but
+  # behind the browser, and the click reads as doing nothing at all.
   expected="[Desktop Entry]
 Version=1.0
 Type=Application
@@ -463,6 +490,7 @@ Icon=phpstorm
 NoDisplay=true
 Categories=TextEditor;Utility;
 Terminal=false
+StartupNotify=true
 MimeType=x-scheme-handler/phpstorm;x-scheme-handler/pstorm;
 Exec=$handler %u"
 
@@ -496,6 +524,7 @@ step_gnome() {
   local uuid="window-thirds@desarrolla2"
   local src="$DOTFILES/gnome/$uuid"
   local schema="$src/schemas/org.gnome.shell.extensions.window-thirds.gschema.xml"
+  local tiling="tiling-assistant@ubuntu.com"
   local enabled
 
   link "$src" "$HOME/.local/share/gnome-shell/extensions/$uuid"
@@ -525,6 +554,15 @@ step_gnome() {
     else enabled="${enabled%]}, '$uuid']"; fi
     gsettings set org.gnome.shell enabled-extensions "$enabled"
     act "enabled $uuid; log out and back in to load it"
+  fi
+
+  # Placing windows is window-thirds' job. Disabled, not removed: its package also carries the dock and the Ubuntu
+  # session.
+  if [[ "$(gsettings get org.gnome.shell disabled-extensions 2>/dev/null)" == *"'$tiling'"* ]]; then
+    ok "$tiling disabled"
+  else
+    act "disabling $tiling"
+    run gnome-extensions disable "$tiling" || warn "could not disable it: gnome-extensions disable $tiling"
   fi
 }
 

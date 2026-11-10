@@ -8,8 +8,8 @@
 #
 # Written here instead of using sanduhrs/phpstorm-url-handler, which no longer
 # works: it calls `phpstorm --line N file`, and the current launcher rejects
-# --line unless a project directory comes first. It also ends by calling wmctrl
-# to raise the window, which does nothing under Wayland.
+# --line unless a project directory comes first. It also raises the window with
+# wmctrl, which only reaches an IDE running on XWayland; see below.
 #
 set -uo pipefail
 
@@ -37,6 +37,14 @@ die() {
 url="${1:-}"
 [[ -n "$url" ]] || die "no URL given"
 log "url: $url"
+
+# Under Wayland the IDE can only raise its window if it is handed an activation
+# token minted by the compositor for the click that started this. The browser
+# has to pass it down in XDG_ACTIVATION_TOKEN; a browser that shells out to
+# xdg-open loses it, and then the file opens behind the browser and the click
+# looks like it did nothing. Logged because it is the difference between "the
+# browser is not cooperating" and "the IDE is ignoring the token".
+log "activation token: ${XDG_ACTIVATION_TOKEN:-<none>} | startup id: ${DESKTOP_STARTUP_ID:-<none>}"
 
 # %XX unescaping. The URL arrives from a browser, so a path with a space is
 # %20 and any of the pattern characters below could be escaped.
@@ -80,6 +88,27 @@ while [[ "$dir" != / ]]; do
   dir="$(dirname -- "$dir")"
 done
 : "${project:=$(dirname -- "$file")}"
+
+# Raising the window is a separate problem from opening the file, and the harder
+# one. Under Wayland a background app cannot raise itself without an activation
+# token minted for the originating click, and a browser that reaches this script
+# through xdg-open has already lost it: the file opens behind the browser and the
+# click reads as doing nothing. GNOME offers no way out either — org.gnome.Shell
+# exposes no window activation and Eval is disabled.
+#
+# So the IDE runs on XWayland (-Dawt.toolkit.name=XToolkit in phpstorm64.vmoptions)
+# and this asks mutter to activate it. wmctrl requests as a pager, and mutter
+# honours pager requests unconditionally, with no token involved.
+#
+# Raised before the open request rather than after it, so the script still ends
+# in a single exec: the window comes up and the file lands in it a moment later.
+# With no IDE running there is nothing to raise and the fresh window takes focus
+# on its own, so a failure here is not worth reporting to the user.
+if command -v wmctrl >/dev/null; then
+  wmctrl -x -a jetbrains-phpstorm || log "no PhpStorm window to raise yet"
+else
+  log "wmctrl not installed, the window will open without being raised"
+fi
 
 log "opening $file:$line in project $project"
 exec "$PHPSTORM" "$project" --line "$line" "$file"

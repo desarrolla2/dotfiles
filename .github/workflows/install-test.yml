@@ -167,6 +167,17 @@ jobs:
             }
           done
 
+      - name: uv install script
+        run: |
+          set -euo pipefail
+          url=$(grep -oP 'UV_URL="\K[^"]+' install.sh)
+          echo "$url"
+          curl -LsSf "$url" -o /tmp/uv.sh
+          # install.sh relies on it to leave the shell profiles alone: zshrc.sh owns the PATH.
+          grep -q UV_NO_MODIFY_PATH /tmp/uv.sh || {
+            echo "::error::the uv installer no longer honours \$UV_NO_MODIFY_PATH"; exit 1
+          }
+
       - name: Pinned Nerd Font release asset
         env:
           GH_TOKEN: ${{ github.token }}

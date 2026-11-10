@@ -1,0 +1,9 @@
+# Every window opens in the tmux session "main", created on first use. Closing a
+# window only detaches, so nothing running in tmux is lost and nothing to confirm.
+command = tmux new-session -A -s main
+confirm-close-surface = false
+
+# The Nerd Font the starship step installs, for the prompt's glyphs. Two points
+# under the default 12, so three Claude Code panes fit side by side.
+font-family = JetBrainsMono Nerd Font
+font-size = 10

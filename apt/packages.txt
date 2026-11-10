@@ -40,6 +40,8 @@
 #   two external plugins    INSTALL.md step 4.
 #   JetBrainsMono Nerd Font zip from the nerd-fonts GitHub releases, unpacked
 #                           into ~/.local/share/fonts. INSTALL.md step 4.
+#   uv                      install script from astral.sh; not in the
+#                           archive. INSTALL.md step 3.
 
 
 # --------------------------------------------------------------------- base --
@@ -52,6 +54,9 @@ ca-certificates     # the root store those HTTPS downloads validate against, and
 
 vim                 # terminal editor for the edits PhpStorm is not open for; $EDITOR stays nano, see zsh/zshrc.sh
 htop                # interactive process and memory view, for finding which container is eating the machine
+make                # every project is driven by a Makefile, and so is the Dropbox symlink manifest (INSTALL.md step 11)
+jq                  # reads JSON in the shell: API responses, `docker inspect`, the one-liners Claude Code writes
+gh                  # GitHub CLI: pull requests, issues and CI runs from the terminal, and how Claude Code reaches them
 
 # -------------------------------------------------------------------- shell --
 
@@ -65,15 +70,14 @@ unzip               # unpacks the JetBrainsMono Nerd Font zip, the only thing th
 
 # ----------------------------------------------------------------- terminal --
 
-guake               # the drop-down terminal opened with F12, the terminal actually used all day
-
-dconf-cli           # provides /usr/bin/dconf, which loads and dumps guake/guake.dconf; guake itself does not depend on it, it only arrives on a desktop install as a gdm3 dependency, so it is listed here rather than assumed
+ghostty             # the terminal, opens into tmux; the archive package, as the snap draws on the CPU on an NVIDIA card
+tmux                # named windows and panes for several Claude Code sessions, kept alive when the window closes; ghostty opens into it
+xclip               # Claude Code reads a pasted image (Ctrl+V) from the X11 clipboard through it; without it only text pastes
 
 # ------------------------------------------------------------- url handlers --
 
-# Same trap as dconf-cli above: both are already present on a GNOME desktop as
-# somebody else's dependency, so the handlers step appears to work until it runs
-# on a machine that is not one.
+# Both are already present on a GNOME desktop as somebody else's dependency, so
+# the handlers step appears to work until it runs on a machine that is not one.
 xdg-utils           # provides xdg-mime, which registers bin/phpstorm-url-handler for the phpstorm:// scheme
 desktop-file-utils  # provides update-desktop-database, which the desktop file is not picked up without
 

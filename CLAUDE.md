@@ -23,7 +23,7 @@ anything.
 
 ## Environment
 
-Ubuntu 26.04, zsh + oh-my-zsh with a starship prompt, guake, PhpStorm via
+Ubuntu 26.04, zsh + oh-my-zsh with a starship prompt, ghostty + tmux, PhpStorm via
 JetBrains Toolbox, Docker for every project environment, Dropbox for sync,
 Chrome, Claude Code.
 
@@ -32,7 +32,7 @@ graphical dialog.
 
 ## Layout
 
-One directory per tool: `apt/ bin/ docker/ docs/ git/ gnome/ guake/ ssh/ zsh/`,
+One directory per tool: `apt/ bin/ docker/ docs/ ghostty/ git/ gnome/ ssh/ starship/ tmux/ zsh/`,
 plus `install.sh` and `INSTALL.md`. See README.md.
 
 Files are symlinked, so editing the live config edits the repository. The one

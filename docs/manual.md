@@ -9,8 +9,8 @@ Do them in this order:
 1. **Dropbox**: its first sync takes hours and everything else waits on it.
 2. **Chrome**: the next two logins open a browser, so they land in the one
    already signed in.
-3. **JetBrains Toolbox / PhpStorm**: `zsh/zshrc.sh` and `guake/guake.dconf`
-   reference paths it creates.
+3. **JetBrains Toolbox / PhpStorm**: `zsh/zshrc.sh` and
+   `bin/phpstorm-url-handler` reference paths it creates.
 4. **Claude Code**: its configuration arrives through Dropbox, so the sync has
    to be done first.
 
@@ -95,8 +95,8 @@ apt-cache policy google-chrome-stable
 
 Install under `~/.local/share/JetBrains/Toolbox`, not `/opt` as JetBrains
 suggests: Toolbox self-updates there without root, and `zsh/zshrc.sh` (`PATH`)
-and `guake/guake.dconf` (click-to-open of `file:line`) hardcode its `scripts/`
-path. With the wrong location guake's quick-open silently does nothing.
+and `bin/phpstorm-url-handler` hardcode its `scripts/` path. With the wrong
+location `phpstorm://` links fail.
 
 ```sh
 mkdir -p ~/.local/share/JetBrains/Toolbox
@@ -137,7 +137,7 @@ Check it:
 # expects a version line
 ~/.local/share/JetBrains/Toolbox/scripts/phpstorm --version
 
-# expects ok: the path guake/guake.dconf points at exists and is executable
+# expects ok: the launcher bin/phpstorm-url-handler calls exists and is executable
 test -x ~/.local/share/JetBrains/Toolbox/scripts/phpstorm && echo ok
 ```
 
