@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+#
+# tmux-even-panes - spread the panes of every tmux window evenly, side by side.
+#
+# tmux/tmux.conf runs it from the hooks of whatever opens, closes or moves a pane.
+# Every window, not only the current one: a pane moved out leaves a gap in the
+# window it came from, which is not the one the hook runs in.
+
+tmux list-windows -a -F '#{window_id}' | while read -r window; do
+  tmux select-layout -t "$window" even-horizontal
+done

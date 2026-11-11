@@ -41,6 +41,7 @@ git identity, and the four apps that end in an account login.
 | `ghostty/` | terminal config: every window opens in the tmux session `main` |
 | `git/` | shared git config and global gitignore |
 | `bin/tmux-open-link` | opens the link under a Ctrl+click in tmux |
+| `bin/tmux-even-panes` | keeps the panes of every tmux window side by side and evenly wide |
 | `gnome/` | GNOME Shell extensions: Super+Ctrl+arrows place windows in thirds; a link opened from tmux comes to the front |
 | `ssh/` | ssh client config |
 | `sysctl/` | kernel limits: enough inotify watches for PhpStorm |
