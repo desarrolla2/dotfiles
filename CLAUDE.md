@@ -32,13 +32,13 @@ graphical dialog.
 
 ## Layout
 
-One directory per tool: `apt/ bin/ docker/ docs/ ghostty/ git/ gnome/ ssh/ starship/ tmux/ zsh/`,
+One directory per tool: `apt/ bin/ docker/ docs/ ghostty/ git/ gnome/ ssh/ starship/ sysctl/ tmux/ zsh/`,
 plus `install.sh` and `INSTALL.md`. See README.md.
 
-Files are symlinked, so editing the live config edits the repository. The one
-exception is `docker/daemon.json`, copied to `/etc/docker/` because a root
-process reads it and a symlink into `$HOME` would hand the daemon config to
-anyone who can write this checkout.
+Files are symlinked, so editing the live config edits the repository. The two
+exceptions are `docker/daemon.json` and `sysctl/60-inotify.conf`, copied under
+`/etc/` because a root process reads them and a symlink into `$HOME` would hand
+root's config to anyone who can write this checkout.
 
 ## Machine-local, never committed
 

@@ -195,6 +195,16 @@ check_docker() {
     "sudo systemctl restart docker so /etc/docker/daemon.json is picked up"; fi
 }
 
+# Out of watches, PhpStorm stops seeing what changes on disk outside it.
+check_sysctl() {
+  local src="$DOTFILES/sysctl/60-inotify.conf" dst=/etc/sysctl.d/60-inotify.conf
+  if cmp -s "$src" "$dst"; then pass "$dst matches sysctl/60-inotify.conf"
+  else fail "$dst" "a copy of $src" "different or missing" "./install.sh --step sysctl"; fi
+  check "fs.inotify.max_user_watches is live" \
+    "$(sed -n 's/^fs\.inotify\.max_user_watches *= *//p' "$src")" \
+    "$(cat /proc/sys/fs/inotify/max_user_watches)" "./install.sh --step sysctl, then restart PhpStorm"
+}
+
 # A URL handler fails silently by design: the browser hands the link over and
 # nothing happens. These four checks are the only warning you get.
 check_handlers() {
@@ -284,6 +294,7 @@ section "ghostty";  check_ghostty
 section "git";      check_git_config; check_git_identities
 section "ssh";      check_ssh
 section "docker";   check_docker
+section "sysctl";   check_sysctl
 section "handlers"; check_handlers
 section "gnome";    check_gnome
 section "symlinks"; check_dangling

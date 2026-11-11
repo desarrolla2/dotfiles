@@ -16,7 +16,7 @@ DOTFILES="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 BACKUP_DIR="$HOME/.backup"
 
 # Order matters: later steps need packages installed by earlier ones.
-STEPS=(packages uv zsh starship tmux ghostty git ssh docker handlers gnome)
+STEPS=(packages uv zsh starship tmux ghostty git ssh docker sysctl handlers gnome)
 
 UV_URL="https://astral.sh/uv/install.sh"
 
@@ -429,6 +429,34 @@ Signed-By: $DOCKER_KEYRING"
   fi
   say "log limits apply to new containers; recreate existing ones with"
   say "'docker compose up -d --force-recreate'"
+}
+
+# -------------------------------------------------------------------- sysctl --
+
+# Copied, not symlinked, for the same reason as daemon.json: root reads it.
+step_sysctl() {
+  local src="$DOTFILES/sysctl/60-inotify.conf" dst="/etc/sysctl.d/60-inotify.conf"
+  local want live
+
+  if [[ -r "$dst" ]] && cmp -s "$src" "$dst"; then
+    ok "$dst matches"
+  elif ((DRY_RUN)); then
+    act "would install sysctl/60-inotify.conf to $dst and load it"
+    return 0
+  else
+    act "installing sysctl/60-inotify.conf to $dst as root:root 644"
+    as_root install -D -o root -g root -m 644 "$src" "$dst"
+  fi
+
+  want="$(sed -n 's/^fs\.inotify\.max_user_watches *= *//p' "$src")"
+  live="$(cat /proc/sys/fs/inotify/max_user_watches)"
+  if [[ "$live" == "$want" ]]; then
+    ok "fs.inotify.max_user_watches is $live"
+  else
+    act "loading $dst ($live -> $want); restart PhpStorm afterwards"
+    # A container's /proc/sys is read-only: there it waits for a boot.
+    as_root sysctl -q --load "$dst" || warn "could not load it now; it applies at the next boot"
+  fi
 }
 
 # ------------------------------------------------------------------ handlers --

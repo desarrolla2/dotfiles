@@ -135,7 +135,7 @@ ssh rejects a group- or world-writable config with `Bad owner or permissions`.
 Repository files arrive 664 and git does not track that mode, so every fresh
 clone needs the `chmod` again.
 
-## 7. docker
+## 7. docker and inotify
 
 ```sh
 ./install.sh --step docker
@@ -153,6 +153,17 @@ Two things worth knowing: the `docker` group is equivalent to root on the host,
 and `daemon.json` is **copied**, not symlinked, because a root process reads it.
 Its log limits apply to containers created afterwards, so recreate existing ones
 with `docker compose up -d --force-recreate`.
+
+### inotify watches
+
+```sh
+./install.sh --step sysctl
+```
+
+Copies `sysctl/60-inotify.conf` to `/etc/sysctl.d/` and loads it: 1048576
+watches, where Ubuntu's `30-localsearch.conf` leaves 65536 and PhpStorm warns
+that it has run out. Files there load in name order and the last one wins, hence
+the `60-`. **Restart PhpStorm afterwards.**
 
 ## 8. The four manual apps
 

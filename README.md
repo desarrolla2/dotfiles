@@ -20,7 +20,7 @@ cd ~/Projects/devtia/dotfiles
 Steps run in this order and each one is idempotent:
 
 ```
-packages  uv  zsh  starship  tmux  ghostty  git  ssh  docker  handlers  gnome
+packages  uv  zsh  starship  tmux  ghostty  git  ssh  docker  sysctl  handlers  gnome
 ```
 
 Run one on its own with `./install.sh --step docker`. Nothing is ever deleted:
@@ -43,14 +43,15 @@ git identity, and the four apps that end in an account login.
 | `bin/tmux-open-link` | opens the link under a Ctrl+click in tmux |
 | `gnome/` | GNOME Shell extensions: Super+Ctrl+arrows place windows in thirds; a link opened from tmux comes to the front |
 | `ssh/` | ssh client config |
+| `sysctl/` | kernel limits: enough inotify watches for PhpStorm |
 | `starship/` | prompt config: the default preset, no language modules |
 | `tmux/` | tmux config: mouse, long scrollback, true colour, windows from 1 |
 | `zsh/zshrc.sh` | the zshrc |
 | `install.sh` | the installer |
 
-Files are symlinked, so editing the live config edits the repository. The one
-exception is `docker/daemon.json`, copied to `/etc/docker/` because a root
-process reads it.
+Files are symlinked, so editing the live config edits the repository. The two
+exceptions are `docker/daemon.json` and `sysctl/60-inotify.conf`, copied under
+`/etc/` because a root process reads them.
 
 ## If you fork this
 
